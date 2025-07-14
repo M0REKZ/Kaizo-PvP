@@ -772,3 +772,9 @@ MACRO_CONFIG_INT(ClVideoRecorderFPS, cl_video_recorder_fps, 60, 1, 1000, CFGFLAG
 /*
  * Add config variables for mods below this comment to avoid merge conflicts.
  */
+
+
+ //+KZ
+MACRO_CONFIG_INT(SvScoreLimit, sv_score_limit, 20, 0, 2147483647, CFGFLAG_SERVER, "Score Limit")
+MACRO_CONFIG_INT(SvTimeLimit, sv_time_limit, 0, 0, 2147483647, CFGFLAG_SERVER, "Time Limit")
+MACRO_CONFIG_INT(SvTeamdamage, sv_team_damage, 0, 0, 1, CFGFLAG_SERVER, "Team Damage")

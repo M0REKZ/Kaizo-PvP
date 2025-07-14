@@ -269,6 +269,13 @@ public:
 
 	CSaveTee &GetLastRescueTeeRef(int Mode = RESCUEMODE_AUTO) { return m_RescueTee[Mode]; }
 	CTuningParams *GetTuning(int Zone) { return Zone ? &TuningList()[Zone] : Tuning(); }
+
+	//+KZ
+
+	CCharacterCore &GetCoreKZ() { return m_Core; }
+	int &GetHealthKZ() { return m_Health; }
+	int &GetDamageTakenKZ() { return m_DamageTaken; }
+	int &GetDamageTakenTickKZ() { return m_DamageTakenTick; }
 };
 
 #endif

@@ -769,6 +769,9 @@ void CCharacter::PreTick()
 
 void CCharacter::Tick()
 {
+	if(GameServer()->m_pController->CharacterTick(this)) //+KZ
+		return;
+
 	if(g_Config.m_SvNoWeakHook)
 	{
 		if(m_Paused)
@@ -1011,6 +1014,9 @@ void CCharacter::Die(int Killer, int Weapon, bool SendKillMsg)
 
 bool CCharacter::TakeDamage(vec2 Force, int Dmg, int From, int Weapon)
 {
+	if(GameServer()->m_pController->OnCharacterTakeDamage(this, Force, Dmg, From, Weapon)) //+KZ
+		return true;
+
 	if(Dmg)
 	{
 		SetEmote(EMOTE_PAIN, Server()->Tick() + 500 * Server()->TickSpeed() / 1000);

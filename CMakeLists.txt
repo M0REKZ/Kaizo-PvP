@@ -2761,6 +2761,12 @@ if(SERVER)
     gamecontroller.h
     gamemodes/DDRace.cpp
     gamemodes/DDRace.h
+    gamemodes/kz/base_kz.cpp
+    gamemodes/kz/base_kz.h
+    gamemodes/kz/base_pvp.cpp
+    gamemodes/kz/base_pvp.h
+    gamemodes/kz/dm.cpp
+    gamemodes/kz/dm
     gamemodes/mod.cpp
     gamemodes/mod.h
     gameworld.cpp
