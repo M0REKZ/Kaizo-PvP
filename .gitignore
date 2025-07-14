@@ -142,3 +142,7 @@ tags
 *.user
 *.vcxproj
 *.zip
+
+#+KZ
+
+scripts/android/files/.gradle/**
