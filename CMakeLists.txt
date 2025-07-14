@@ -2148,6 +2148,7 @@ set_src(GAME_SHARED GLOB src/game
   alloc.h
   collision.cpp
   collision.h
+  collision_kz.cpp
   gamecore.cpp
   gamecore.h
   layers.cpp
@@ -2741,6 +2742,10 @@ if(SERVER)
     entities/dragger_beam.h
     entities/gun.cpp
     entities/gun.h
+    entities/kz/projectile_kz.cpp
+    entities/kz/projectile_kz.h
+    entities/kz/projectile_pvp.cpp
+    entities/kz/projectile_pvp.h
     entities/laser.cpp
     entities/laser.h
     entities/light.cpp

@@ -276,6 +276,11 @@ public:
 	int &GetHealthKZ() { return m_Health; }
 	int &GetDamageTakenKZ() { return m_DamageTaken; }
 	int &GetDamageTakenTickKZ() { return m_DamageTakenTick; }
+	int &GetReloadTimerKZ() { return m_ReloadTimer; }
+	CNetObj_PlayerInput &GetLatestInputKZ() { return m_LatestInput; }
+	CNetObj_PlayerInput &GetLatestPrevInputKZ() { return m_LatestPrevInput; }
+	int &GetLastNoAmmoSoundKZ() { return m_LastNoAmmoSound; }
+	int &GetAttackTickKZ() { return m_AttackTick; }
 };
 
 #endif

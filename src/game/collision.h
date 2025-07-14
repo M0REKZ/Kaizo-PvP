@@ -165,6 +165,11 @@ private:
 	std::map<int, std::vector<vec2>> m_TeleCheckOuts;
 	// TILE_TELEINEVIL, TILE_TELECHECK, TILE_TELECHECKIN, TILE_TELECHECKINEVIL
 	std::map<int, std::vector<vec2>> m_TeleOthers;
+
+	//+KZ
+public:
+	int FastIntersectLine(vec2 Pos0, vec2 Pos1, vec2 *pOutCollision, vec2 *pOutBeforeCollision) const;
+	int FastIntersectLineProjectile(vec2 Pos0, vec2 Pos1, vec2 *pOutCollision, vec2 *pOutBeforeCollision, int *pTeleNr = nullptr) const;
 };
 
 void ThroughOffset(vec2 Pos0, vec2 Pos1, int *pOffsetX, int *pOffsetY);

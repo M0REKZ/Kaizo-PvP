@@ -422,6 +422,9 @@ void CCharacter::HandleWeaponSwitch()
 
 void CCharacter::FireWeapon()
 {
+	if(GameServer()->m_pController->CharacterFireWeapon(this))
+		return;
+
 	if(m_ReloadTimer != 0)
 	{
 		if(m_LatestInput.m_Fire & 1)

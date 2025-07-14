@@ -154,6 +154,7 @@ public:
 
 	//+KZ
 	virtual bool CharacterTick(CCharacter *pChar) { return false; }
+	virtual bool CharacterFireWeapon(CCharacter *pChar) { return false; }
 	virtual bool OnCharacterTakeDamage(CCharacter *pChar, vec2 Force, int Dmg, int From, int Weapon) { return false; }
 	virtual bool IsFriendlyFire(int ClientID1, int ClientID2) { return false; };
 	virtual bool IsTeamPlay() { return m_GameFlags &= GAMEFLAG_TEAMS; }

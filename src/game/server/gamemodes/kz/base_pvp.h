@@ -11,6 +11,7 @@ public:
 	~CGameControllerBasePvP();
 
 	virtual bool OnCharacterTakeDamage(CCharacter *pChar, vec2 Force, int Dmg, int From, int Weapon) override;
+	virtual bool CharacterFireWeapon(CCharacter *pChar) override;
 
 };
 #endif // GAME_SERVER_GAMEMODES_DDRACE_H
