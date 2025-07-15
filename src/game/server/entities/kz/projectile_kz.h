@@ -10,7 +10,7 @@ public:
 		CGameWorld *pGameWorld,
 		int Owner,
 		vec2 Pos,
-		vec2 Vel,
+		vec2 Dir,
         int Type,
         int EntType = CGameWorld::KZ_ENTTYPE_PROJECTILE_KZ);
 
@@ -21,7 +21,6 @@ public:
 
 protected:
 
-	vec2 m_Vel;
     vec2 m_Dir;
 	int m_LifeSpan;
 	int m_Owner;

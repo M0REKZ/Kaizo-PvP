@@ -203,7 +203,6 @@ bool CGameControllerBasePvP::CharacterFireWeapon(CCharacter *pChar)
 
 		case WEAPON_GUN:
 		{
-			printf("HELLO\n");
 			new CProjectilePvP(&GameServer()->m_World, pChar->GetPlayer()->GetCid(), ProjStartPos, Direction, WEAPON_GUN);
 
 			GameServer()->CreateSound(pChar->m_Pos, SOUND_GUN_FIRE);
@@ -233,12 +232,7 @@ bool CGameControllerBasePvP::CharacterFireWeapon(CCharacter *pChar)
 
 		case WEAPON_GRENADE:
 		{
-			/*new CProjectile(GameWorld(), WEAPON_GRENADE,
-				pChar->GetPlayer()->GetCid(),
-				ProjStartPos,
-				Direction,
-				(int)(Server()->TickSpeed()*GameServer()->Tuning()->m_GrenadeLifetime),
-				g_pData->m_Weapons.m_Grenade.m_pBase->m_Damage, true, 0, SOUND_GRENADE_EXPLODE, WEAPON_GRENADE);*/
+			new CProjectileKZ(&GameServer()->m_World, pChar->GetPlayer()->GetCid(), ProjStartPos, Direction, WEAPON_GRENADE);
 
 			GameServer()->CreateSound(pChar->m_Pos, SOUND_GRENADE_FIRE);
 		} break;

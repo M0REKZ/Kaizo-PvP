@@ -4,15 +4,16 @@
 #include <game/server/entities/character.h>
 #include <game/server/gamecontext.h>
 
-CProjectileKZ::CProjectileKZ(CGameWorld *pGameWorld, int Owner, vec2 Pos, vec2 Vel, int Type, int EntType) :
+CProjectileKZ::CProjectileKZ(CGameWorld *pGameWorld, int Owner, vec2 Pos, vec2 Dir, int Type, int EntType) :
 	CEntity(pGameWorld, EntType)
 {
-	m_SnapVel = m_Vel = Vel;
+	m_SnapVel = m_Dir = normalize(Dir);
 	m_SnapPos = m_Pos = Pos;
 	m_Owner = Owner;
 	m_Type = Type;
 
-	m_Dir = normalize(m_Vel);
+    m_SnapVel *= 50;
+	
 
 	m_PrevTuneZone = -1;
 	m_TuneZone = GameServer()->Collision()->IsTune(GameServer()->Collision()->GetMapIndex(m_Pos));
@@ -20,13 +21,22 @@ CProjectileKZ::CProjectileKZ(CGameWorld *pGameWorld, int Owner, vec2 Pos, vec2 V
 	switch(Type)
 	{
 	case WEAPON_GUN:
-		m_LifeSpan = (int)(Server()->TickSpeed() * GetTuning(m_TuneZone)->m_GunLifetime);
+        if(m_TuneZone > 0)
+		    m_LifeSpan = (int)(Server()->TickSpeed() * GetTuning(m_TuneZone)->m_GunLifetime);
+        else
+            m_LifeSpan = (int)(Server()->TickSpeed() * Tuning()->m_GunLifetime);
 		break;
 	case WEAPON_SHOTGUN:
-		m_LifeSpan = (int)(Server()->TickSpeed() * GetTuning(m_TuneZone)->m_GrenadeLifetime);
+		if(m_TuneZone > 0)
+		    m_LifeSpan = (int)(Server()->TickSpeed() * GetTuning(m_TuneZone)->m_ShotgunLifetime);
+        else
+            m_LifeSpan = (int)(Server()->TickSpeed() * Tuning()->m_ShotgunLifetime);
 		break;
 	case WEAPON_GRENADE:
-		m_LifeSpan = (int)(Server()->TickSpeed() * GetTuning(m_TuneZone)->m_ShotgunLifetime);
+		if(m_TuneZone > 0)
+		    m_LifeSpan = (int)(Server()->TickSpeed() * GetTuning(m_TuneZone)->m_GrenadeLifetime);
+        else
+            m_LifeSpan = (int)(Server()->TickSpeed() * Tuning()->m_GrenadeLifetime);
 		break;
 	default: // unknown weapon
 		m_LifeSpan = 0;
@@ -41,7 +51,6 @@ CProjectileKZ::CProjectileKZ(CGameWorld *pGameWorld, int Owner, vec2 Pos, vec2 V
 
 void CProjectileKZ::Reset()
 {
-	printf("RESET\n");
 	m_MarkedForDestroy = true;
 }
 
@@ -130,15 +139,24 @@ bool CProjectileKZ::Move()
 		switch(m_Type)
 		{
 		case WEAPON_GUN:
-			m_Speed = (GetTuning(m_TuneZone)->m_GunSpeed);
+            if(m_TuneZone == 0)
+			    m_Speed = Tuning()->m_GunSpeed;
+            else
+                m_Speed = GetTuning(m_TuneZone)->m_GunSpeed;
 			UpdateSpeed = true;
 			break;
 		case WEAPON_SHOTGUN:
-			m_Speed = (GetTuning(m_TuneZone)->m_GrenadeSpeed);
+			if(m_TuneZone == 0)
+			    m_Speed = Tuning()->m_ShotgunSpeed;
+            else
+                m_Speed = GetTuning(m_TuneZone)->m_ShotgunSpeed;
 			UpdateSpeed = true;
 			break;
 		case WEAPON_GRENADE:
-			m_Speed = (GetTuning(m_TuneZone)->m_ShotgunSpeed);
+			if(m_TuneZone == 0)
+			    m_Speed = Tuning()->m_GrenadeSpeed;
+            else
+                m_Speed = GetTuning(m_TuneZone)->m_GrenadeSpeed;
 			UpdateSpeed = true;
 			break;
 		}
@@ -146,40 +164,113 @@ bool CProjectileKZ::Move()
         switch(m_Type)
         {
         case WEAPON_GUN:
-            m_Curvature = Tuning()->m_GunCurvature;
+            if(m_TuneZone == 0)
+                m_Curvature = Tuning()->m_GunCurvature;
+            else
+                m_Curvature = GetTuning(m_TuneZone)->m_GunCurvature;
             break;
         case WEAPON_SHOTGUN:
-            m_Curvature = GetTuning(m_TuneZone)->m_GrenadeCurvature;
+            if(m_TuneZone == 0)
+                m_Curvature = Tuning()->m_ShotgunCurvature;
+            else
+                m_Curvature = GetTuning(m_TuneZone)->m_ShotgunCurvature;
             break;
         case WEAPON_GRENADE:
-            m_Curvature = GetTuning(m_TuneZone)->m_ShotgunCurvature;
+            if(m_TuneZone == 0)
+                m_Curvature = Tuning()->m_GrenadeCurvature;
+            else
+                m_Curvature = GetTuning(m_TuneZone)->m_GrenadeCurvature;
             break;
         }
-
-		m_PrevTuneZone = m_TuneZone;
-	}
-
-	if(UpdateSpeed)
-	{
-		printf("SETSPEED %.5f, %.5f\n", m_Speed, (m_Speed * (1 / (float)Server()->TickSpeed())));
-		m_Vel = normalize(m_Vel) * (m_Speed * (1 / (float)Server()->TickSpeed()));
-		m_SnapPos = m_Pos;
-		m_SnapVel = m_Vel;
-		m_SnapTick = Server()->Tick();
-		m_Dir = normalize(m_Vel);
-        UpdateSpeed = false;
 	}
 
     //Apply curvature
-    float Time = ((Server()->Tick() - (float)m_StartTick)/(float)Server()->TickSpeed());
-    float Result = (m_Curvature / 10000 * (Time * Time)) * Time * 100000;
-    printf("Result %f\n",Result);
-    m_Vel.y = m_SnapVel.y + Result;
+	if(UpdateSpeed)
+	{
+        vec2 TempPos; //TempPos to change m_Dir, following the original projectile path
+        float Speed, Curvature;
 
-	vec2 CollidePos;
+        if(m_PrevTuneZone != m_TuneZone)
+        {
+            switch(m_Type)
+            {
+            case WEAPON_GUN:
+                if(m_PrevTuneZone == 0)
+                    Speed = Tuning()->m_GunSpeed;
+                else
+                    Speed = GetTuning(m_PrevTuneZone)->m_GunSpeed;
+                UpdateSpeed = true;
+                break;
+            case WEAPON_SHOTGUN:
+                if(m_PrevTuneZone == 0)
+                    Speed = Tuning()->m_ShotgunSpeed;
+                else
+                    Speed = GetTuning(m_PrevTuneZone)->m_ShotgunSpeed;
+                UpdateSpeed = true;
+                break;
+            case WEAPON_GRENADE:
+                if(m_PrevTuneZone == 0)
+                    Speed = Tuning()->m_GrenadeSpeed;
+                else
+                    Speed = GetTuning(m_PrevTuneZone)->m_GrenadeSpeed;
+                UpdateSpeed = true;
+                break;
+            }
 
-	m_Pos += m_Vel;
+            switch(m_Type)
+            {
+            case WEAPON_GUN:
+                if(m_PrevTuneZone == 0)
+                    Curvature = Tuning()->m_GunCurvature;
+                else
+                    Curvature = GetTuning(m_PrevTuneZone)->m_GunCurvature;
+                break;
+            case WEAPON_SHOTGUN:
+                if(m_PrevTuneZone == 0)
+                    Curvature = Tuning()->m_ShotgunCurvature;
+                else
+                    Curvature = GetTuning(m_PrevTuneZone)->m_ShotgunCurvature;
+                break;
+            case WEAPON_GRENADE:
+                if(m_PrevTuneZone == 0)
+                    Curvature = Tuning()->m_GrenadeCurvature;
+                else
+                    Curvature = GetTuning(m_PrevTuneZone)->m_GrenadeCurvature;
+                break;
+            }
+        }
+
+        float Time = ((Server()->Tick() - (m_StartTick - 1))/(float)Server()->TickSpeed());
+        Time *= Speed;
+
+        TempPos.x = m_SnapPos.x + m_Dir.x * Time;
+        TempPos.y = m_SnapPos.y + m_Dir.y * Time + Curvature / 10000 * (Time * Time);
+
+		m_SnapPos = m_Pos;
+        m_StartTick = m_SnapTick = Server()->Tick() - 1;
+        m_SnapVel = m_Dir = normalize(TempPos - m_Pos);
+
+        Time = (1/(float)Server()->TickSpeed());
+        Time *= m_Speed;
+
+        m_Pos.x = m_SnapPos.x + m_Dir.x * Time;
+        m_Pos.y = m_SnapPos.y + m_Dir.y * Time + m_Curvature / 10000 * (Time * Time);
+
+        m_SnapVel *= 50;
+        UpdateSpeed = false;
+        m_PrevTuneZone = m_TuneZone;
+	}
+    else
+    {
+        float Time = ((Server()->Tick() - (float)m_StartTick)/(float)Server()->TickSpeed());
+        Time *= m_Speed;
+
+        m_Pos.x = m_SnapPos.x + m_Dir.x * Time;
+        m_Pos.y = m_SnapPos.y + m_Dir.y * Time + m_Curvature / 10000 * (Time * Time);
+    }
+
 	int TeleNr = 0;
+    vec2 CollidePos;
 
 	int Collide = Collision()->FastIntersectLineProjectile(PrevPos, m_Pos, &CollidePos, &m_Pos, &TeleNr);
 
@@ -274,10 +365,10 @@ void CProjectileKZ::FillExtraInfo(CNetObj_DDNetProjectile *pProj)
 		Flags |= PROJECTILEFLAG_NORMALIZE_VEL;
 	}
 
-	pProj->m_X = round_to_int(m_Pos.x * 100.0f);
-	pProj->m_Y = round_to_int(m_Pos.y * 100.0f);
+	pProj->m_X = round_to_int(m_SnapPos.x * 100.0f);
+	pProj->m_Y = round_to_int(m_SnapPos.y * 100.0f);
 	pProj->m_Type = m_Type;
-	pProj->m_StartTick = Server()->Tick();
+	pProj->m_StartTick = m_SnapTick;
 	pProj->m_Owner = m_Owner;
 	pProj->m_Flags = Flags;
 	pProj->m_SwitchNumber = m_Number;
@@ -333,7 +424,7 @@ vec2 CProjectileKZ::GetPos(float Time)
 		break;
 	}
 
-	return CalcPos(m_Pos, normalize(m_Vel), Curvature, Speed, Time);
+	return CalcPos(m_Pos, m_Dir, Curvature, Speed, Time);
 }
 
 void CProjectileKZ::SwapClients(int Client1, int Client2)
