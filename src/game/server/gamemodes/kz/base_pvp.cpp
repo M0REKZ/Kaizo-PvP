@@ -21,6 +21,15 @@ CGameControllerBasePvP::CGameControllerBasePvP(class CGameContext *pGameServer) 
 {
 	m_pGameType = g_Config.m_SvTestingCommands ? TEST_TYPE_NAME : GAME_TYPE_NAME;
 	m_GameFlags = 0;
+
+	if(g_Config.m_SvTuneReset)
+	{
+		GameServer()->Tuning()->Set("gun_speed", 2200.0f);
+		GameServer()->Tuning()->Set("gun_curvature", 1.25f);
+		GameServer()->Tuning()->Set("shotgun_speed", 2750.0f);
+		GameServer()->Tuning()->Set("shotgun_speeddiff", 0.8f);
+		GameServer()->Tuning()->Set("shotgun_curvature", 1.25f);
+	}
 }
 
 CGameControllerBasePvP::~CGameControllerBasePvP() = default;
@@ -215,16 +224,12 @@ bool CGameControllerBasePvP::CharacterFireWeapon(CCharacter *pChar)
 			for(int i = -ShotSpread; i <= ShotSpread; ++i)
 			{
 				float Spreading[] = {-0.185f, -0.070f, 0, 0.070f, 0.185f};
-				float a = angle(Direction);
-				a += Spreading[i+2];
-				float v = 1-(absolute(i)/(float)ShotSpread);
+				float Angle = angle(Direction);
+				Angle += Spreading[i + 2];
+				float v = 1 - (absolute(i) / (float)ShotSpread);
 				float Speed = mix((float)GameServer()->Tuning()->m_ShotgunSpeeddiff, 1.0f, v);
-				/*new CProjectile(GameWorld(), WEAPON_SHOTGUN,
-					pChar->GetPlayer()->GetCid(),
-					ProjStartPos,
-					vec2(cosf(a), sinf(a))*Speed,
-					(int)(Server()->TickSpeed()*GameServer()->Tuning()->m_ShotgunLifetime),
-					g_pData->m_Weapons.m_Shotgun.m_pBase->m_Damage, false, 0, -1, WEAPON_SHOTGUN);*/
+				
+				new CProjectilePvP(&GameServer()->m_World, pChar->GetPlayer()->GetCid(), ProjStartPos, direction(Angle)*Speed, WEAPON_SHOTGUN);
 			}
 
 			GameServer()->CreateSound(pChar->m_Pos, SOUND_SHOTGUN_FIRE);
@@ -232,7 +237,7 @@ bool CGameControllerBasePvP::CharacterFireWeapon(CCharacter *pChar)
 
 		case WEAPON_GRENADE:
 		{
-			new CProjectileKZ(&GameServer()->m_World, pChar->GetPlayer()->GetCid(), ProjStartPos, Direction, WEAPON_GRENADE);
+			new CProjectilePvP(&GameServer()->m_World, pChar->GetPlayer()->GetCid(), ProjStartPos, Direction, WEAPON_GRENADE);
 
 			GameServer()->CreateSound(pChar->m_Pos, SOUND_GRENADE_FIRE);
 		} break;

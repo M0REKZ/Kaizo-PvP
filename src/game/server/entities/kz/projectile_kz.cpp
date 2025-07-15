@@ -3,6 +3,7 @@
 #include <game/mapitems.h>
 #include <game/server/entities/character.h>
 #include <game/server/gamecontext.h>
+#include <game/server/player.h>
 
 CProjectileKZ::CProjectileKZ(CGameWorld *pGameWorld, int Owner, vec2 Pos, vec2 Dir, int Type, int EntType) :
 	CEntity(pGameWorld, EntType)
@@ -59,8 +60,46 @@ void CProjectileKZ::Tick()
 	if(GameWorld()->m_Paused)
 		return;
 
-	if(Move())
-		Reset();
+    if(m_LifeSpan > -1)
+		m_LifeSpan--;
+
+    vec2 PrevPos = m_Pos;
+
+    Move();
+
+    vec2 CharacterIntersectPos;
+    vec2 TileIntersectPos;
+    vec2 TilePreIntersectPos;
+    int TeleNr = 0;
+
+    CCharacter* pChar = GameWorld()->IntersectCharacter(PrevPos, m_Pos, 0, CharacterIntersectPos);
+    int Collided = Collide(PrevPos, &TilePreIntersectPos, &TileIntersectPos, &TeleNr);
+
+    if(pChar && Collided)
+    {
+        float lengthchar = distance(PrevPos,CharacterIntersectPos);
+        float lengthtile = distance(PrevPos,TileIntersectPos);
+
+        if(lengthtile < lengthchar)
+        {
+            OnCollide(PrevPos, Collided, &TilePreIntersectPos, &TileIntersectPos, &TeleNr);
+        }
+        else
+        {
+            OnCharacterCollide(PrevPos, pChar, &CharacterIntersectPos);
+        }
+    }
+    else if(pChar)
+    {
+        OnCharacterCollide(PrevPos, pChar, &CharacterIntersectPos);
+    }
+    else if(Collided)
+    {
+        OnCollide(PrevPos, Collided, &TilePreIntersectPos, &TileIntersectPos, &TeleNr);
+    }
+
+    if(m_LifeSpan == -1)
+        Reset();
 }
 
 void CProjectileKZ::TickPaused()
@@ -126,11 +165,10 @@ void CProjectileKZ::Snap(int SnappingClient)
 	}
 }
 
-bool CProjectileKZ::Move()
+void CProjectileKZ::Move()
 {
 	// Set m_Vel to tunezone speed and curvature
 	bool UpdateSpeed = false;
-    vec2 PrevPos = m_Pos;
 
 	m_TuneZone = GameServer()->Collision()->IsTune(GameServer()->Collision()->GetMapIndex(m_Pos));
 
@@ -188,59 +226,56 @@ bool CProjectileKZ::Move()
 	if(UpdateSpeed)
 	{
         vec2 TempPos; //TempPos to change m_Dir, following the original projectile path
-        float Speed, Curvature;
+        float Speed = 0.f, Curvature = 0.f;
 
-        if(m_PrevTuneZone != m_TuneZone)
+        switch(m_Type)
         {
-            switch(m_Type)
-            {
-            case WEAPON_GUN:
-                if(m_PrevTuneZone == 0)
-                    Speed = Tuning()->m_GunSpeed;
-                else
-                    Speed = GetTuning(m_PrevTuneZone)->m_GunSpeed;
-                UpdateSpeed = true;
-                break;
-            case WEAPON_SHOTGUN:
-                if(m_PrevTuneZone == 0)
-                    Speed = Tuning()->m_ShotgunSpeed;
-                else
-                    Speed = GetTuning(m_PrevTuneZone)->m_ShotgunSpeed;
-                UpdateSpeed = true;
-                break;
-            case WEAPON_GRENADE:
-                if(m_PrevTuneZone == 0)
-                    Speed = Tuning()->m_GrenadeSpeed;
-                else
-                    Speed = GetTuning(m_PrevTuneZone)->m_GrenadeSpeed;
-                UpdateSpeed = true;
-                break;
-            }
-
-            switch(m_Type)
-            {
-            case WEAPON_GUN:
-                if(m_PrevTuneZone == 0)
-                    Curvature = Tuning()->m_GunCurvature;
-                else
-                    Curvature = GetTuning(m_PrevTuneZone)->m_GunCurvature;
-                break;
-            case WEAPON_SHOTGUN:
-                if(m_PrevTuneZone == 0)
-                    Curvature = Tuning()->m_ShotgunCurvature;
-                else
-                    Curvature = GetTuning(m_PrevTuneZone)->m_ShotgunCurvature;
-                break;
-            case WEAPON_GRENADE:
-                if(m_PrevTuneZone == 0)
-                    Curvature = Tuning()->m_GrenadeCurvature;
-                else
-                    Curvature = GetTuning(m_PrevTuneZone)->m_GrenadeCurvature;
-                break;
-            }
+        case WEAPON_GUN:
+            if(m_PrevTuneZone == 0)
+                Speed = Tuning()->m_GunSpeed;
+            else
+                Speed = GetTuning(m_PrevTuneZone)->m_GunSpeed;
+            UpdateSpeed = true;
+            break;
+        case WEAPON_SHOTGUN:
+            if(m_PrevTuneZone == 0)
+                Speed = Tuning()->m_ShotgunSpeed;
+            else
+                Speed = GetTuning(m_PrevTuneZone)->m_ShotgunSpeed;
+            UpdateSpeed = true;
+            break;
+        case WEAPON_GRENADE:
+            if(m_PrevTuneZone == 0)
+                Speed = Tuning()->m_GrenadeSpeed;
+            else
+                Speed = GetTuning(m_PrevTuneZone)->m_GrenadeSpeed;
+            UpdateSpeed = true;
+            break;
         }
 
-        float Time = ((Server()->Tick() - (m_StartTick - 1))/(float)Server()->TickSpeed());
+        switch(m_Type)
+        {
+        case WEAPON_GUN:
+            if(m_PrevTuneZone == 0)
+                Curvature = Tuning()->m_GunCurvature;
+            else
+                Curvature = GetTuning(m_PrevTuneZone)->m_GunCurvature;
+            break;
+        case WEAPON_SHOTGUN:
+            if(m_PrevTuneZone == 0)
+                Curvature = Tuning()->m_ShotgunCurvature;
+            else
+                Curvature = GetTuning(m_PrevTuneZone)->m_ShotgunCurvature;
+            break;
+        case WEAPON_GRENADE:
+            if(m_PrevTuneZone == 0)
+                Curvature = Tuning()->m_GrenadeCurvature;
+            else
+                Curvature = GetTuning(m_PrevTuneZone)->m_GrenadeCurvature;
+            break;
+        }
+
+	float Time = ((Server()->Tick() - (m_StartTick - 1))/(float)Server()->TickSpeed());
         Time *= Speed;
 
         TempPos.x = m_SnapPos.x + m_Dir.x * Time;
@@ -268,26 +303,30 @@ bool CProjectileKZ::Move()
         m_Pos.x = m_SnapPos.x + m_Dir.x * Time;
         m_Pos.y = m_SnapPos.y + m_Dir.y * Time + m_Curvature / 10000 * (Time * Time);
     }
+}
 
-	int TeleNr = 0;
-    vec2 CollidePos;
+int CProjectileKZ::Collide(vec2 PrevPos, vec2 *pPreIntersectPos, vec2 *pIntersectPos, int *pTeleNr)
+{
+	return Collision()->FastIntersectLineProjectile(PrevPos, m_Pos, pIntersectPos, pPreIntersectPos, pTeleNr);
+}
 
-	int Collide = Collision()->FastIntersectLineProjectile(PrevPos, m_Pos, &CollidePos, &m_Pos, &TeleNr);
-
-	if(Collide)
+void CProjectileKZ::OnCollide(vec2 PrevPos, int TileIndex, vec2 *pPreIntersectPos, vec2 *pIntersectPos, int *pTeleNr)
+{
+    if(TileIndex == TILE_TELEINWEAPON && pTeleNr && *pTeleNr)
 	{
-		if(Collide == TILE_TELEINWEAPON && TeleNr)
-		{
-			int TeleOut = GameWorld()->m_Core.RandomOr0(Collision()->TeleOuts(TeleNr - 1).size());
-			m_Pos = Collision()->TeleOuts(TeleNr - 1)[TeleOut];
-		}
-		else
-		{
-			return true;
-		}
+		int TeleOut = GameWorld()->m_Core.RandomOr0(Collision()->TeleOuts(*pTeleNr - 1).size());
+		m_Pos = Collision()->TeleOuts(*pTeleNr - 1)[TeleOut];
 	}
+	else
+	{
+		Reset();
+	}
+}
 
-	return false;
+void CProjectileKZ::OnCharacterCollide(vec2 PrevPos, CCharacter *pChar, vec2 *pIntersectPos)
+{
+    if(pChar->GetPlayer() && pChar->GetPlayer()->GetCid() != m_Owner)
+        Reset();
 }
 
 void CProjectileKZ::FillInfo(CNetObj_Projectile *pProj)

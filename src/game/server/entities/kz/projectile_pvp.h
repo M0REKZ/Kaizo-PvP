@@ -10,14 +10,19 @@ public:
 		CGameWorld *pGameWorld,
 		int Owner,
 		vec2 Pos,
-		vec2 Vel,
+		vec2 Dir,
         int Type);
 
-	void Tick() override;
+		virtual void Tick() override;
+
+		int m_DDRaceTeam;
 
 protected:
+		int m_OrigStartTick;
+		CCharacter * m_pInsideChar;
 
-    virtual bool Move() override;
+		virtual void OnCollide(vec2 PrevPos, int TileIndex = 0, vec2 *pPreIntersectPos = nullptr, vec2 *pIntersectPos = nullptr, int *pTeleNr = nullptr) override;
+    	virtual void OnCharacterCollide(vec2 PrevPos, CCharacter* pChar, vec2 *pIntersectPos = nullptr) override;
 
 };
 

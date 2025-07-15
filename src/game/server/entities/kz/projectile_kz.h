@@ -33,14 +33,13 @@ protected:
 
 	// DDRace
 
-    int m_Bouncing;
+    int m_Bouncing; //TODO +KZ
 	int m_TuneZone;
-	bool m_IsSolo;
-    int m_DDRaceTeam;
 
-    virtual bool Move();
-
-    static float GetWeaponLifeTime(int Type); //for constructor
+    virtual void Move();
+    virtual int Collide(vec2 PrevPos, vec2 *pPreIntersectPos = nullptr, vec2 *pIntersectPos = nullptr, int *pTeleNr = nullptr);
+    virtual void OnCollide(vec2 PrevPos, int TileIndex = 0, vec2 *pPreIntersectPos = nullptr, vec2 *pIntersectPos = nullptr, int *pTeleNr = nullptr);
+    virtual void OnCharacterCollide(vec2 PrevPos, CCharacter* pChar, vec2 *pIntersectPos = nullptr);
 
 public:
 
