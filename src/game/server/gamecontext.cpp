@@ -3741,6 +3741,9 @@ void CGameContext::OnConsoleInit()
 	Console()->Register("dump_antibot", "", CFGFLAG_SERVER | CFGFLAG_STORE, ConDumpAntibot, this, "Dumps the antibot status");
 	Console()->Register("antibot", "r[command]", CFGFLAG_SERVER | CFGFLAG_STORE, ConAntibot, this, "Sends a command to the antibot");
 
+	//+KZ
+	Console()->Register("rejoin_shutdown", "", CFGFLAG_CHAT |  CFGFLAG_SERVER, ConShutdownRejoin, this, "Shutdown and make players rejoin same server");
+
 	Console()->Chain("sv_motd", ConchainSpecialMotdupdate, this);
 
 	Console()->Chain("sv_vote_kick", ConchainSettingUpdate, this);
@@ -5165,4 +5168,22 @@ void CGameContext::ReadCensorList()
 bool CGameContext::PracticeByDefault() const
 {
 	return g_Config.m_SvPracticeByDefault && g_Config.m_SvTestingCommands;
+}
+
+void CGameContext::ConShutdownRejoin(IConsole::IResult *pResult, void *pUserData)
+{
+	CGameContext *pSelf = (CGameContext *)pUserData;
+	
+	for(int i = 0; i < MAX_CLIENTS; i++)
+	{
+		if(!pSelf->m_apPlayers[i])
+			continue;
+
+		if(pSelf->m_apPlayers[i]->GetClientVersion() < VERSION_DDNET_REDIRECT)
+			continue;
+		pSelf->Server()->RedirectClient(i,g_Config.m_SvPort);
+	}
+
+	pSelf->Console()->ExecuteLine("shutdown Reserved. Please wait or reconnect to the server.");
+    return;
 }

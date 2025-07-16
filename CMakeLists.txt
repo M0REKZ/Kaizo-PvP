@@ -2742,6 +2742,8 @@ if(SERVER)
     entities/dragger_beam.h
     entities/gun.cpp
     entities/gun.h
+    entities/kz/particle_kz.cpp
+    entities/kz/particle_kz.h
     entities/kz/pickup_pvp.cpp
     entities/kz/pickup_pvp.h
     entities/kz/projectile_kz.cpp

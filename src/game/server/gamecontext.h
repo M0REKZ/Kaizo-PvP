@@ -600,6 +600,10 @@ private:
 
 	void LogEvent(const char *Description, int ClientId);
 
+	//+KZ
+
+	static void ConShutdownRejoin(IConsole::IResult *pResult, void *pUserData);
+
 public:
 	CLayers *Layers() { return &m_Layers; }
 	CScore *Score() { return m_pScore; }

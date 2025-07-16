@@ -1,7 +1,9 @@
 /* (c) Magnus Auvinen. See licence.txt in the root of the distribution for more information. */
 /* If you are missing that file, acquire a complete release at teeworlds.com.                */
 #include "pickup_pvp.h"
+#include "particle_kz.h"
 #include <game/server/entities/character.h>
+#include <engine/shared/config.h>
 
 #include <game/generated/protocol.h>
 #include <game/mapitems.h>
@@ -23,6 +25,9 @@ CPickupPvP::CPickupPvP(CGameWorld *pGameWorld, int Type, int SubType, int Layer,
 	m_Number = Number;
 	m_Flags = Flags;
 
+	if(m_Type == POWERUP_NINJA)
+		m_SpawnTick = Server()->Tick() + Server()->TickSpeed() * 90;
+
 	GameWorld()->InsertEntity(this);
 }
 
@@ -37,6 +42,10 @@ void CPickupPvP::Tick()
 	// wait for respawn
 	if(m_SpawnTick > 0)
 	{
+		if (Server()->Tick() % 2 == 0 && g_Config.m_SvPickupParticles)
+		{
+			new CParticleKZ(GameWorld(), vec2(m_Pos.x - 16 + rand() % 32, m_Pos.y - 16 + rand() % 32), 10);
+		}
 		if(Server()->Tick() > m_SpawnTick)
 		{
 			// respawn
@@ -76,7 +85,7 @@ void CPickupPvP::Tick()
 			switch (m_Subtype)
 			{
 				case WEAPON_GRENADE:
-					if(!pChr->GetWeaponGot(WEAPON_GRENADE))
+					if(!pChr->GetWeaponGot(WEAPON_GRENADE) || pChr->GetWeaponAmmo(WEAPON_GRENADE) == 0)
 					{
 						pChr->GiveWeapon(WEAPON_GRENADE);
 						pChr->SetWeaponAmmo(WEAPON_GRENADE, 10);
@@ -87,7 +96,7 @@ void CPickupPvP::Tick()
 					}
 					break;
 				case WEAPON_SHOTGUN:
-					if(!pChr->GetWeaponGot(WEAPON_SHOTGUN))
+					if(!pChr->GetWeaponGot(WEAPON_SHOTGUN) || pChr->GetWeaponAmmo(WEAPON_SHOTGUN) == 0)
 					{
 						pChr->GiveWeapon(WEAPON_SHOTGUN);
 						pChr->SetWeaponAmmo(WEAPON_SHOTGUN, 10);
@@ -98,7 +107,7 @@ void CPickupPvP::Tick()
 					}
 					break;
 				case WEAPON_LASER:
-					if(!pChr->GetWeaponGot(WEAPON_LASER))
+					if(!pChr->GetWeaponGot(WEAPON_LASER) || pChr->GetWeaponAmmo(WEAPON_LASER) == 0)
 					{
 						pChr->GiveWeapon(WEAPON_LASER);
 						pChr->SetWeaponAmmo(WEAPON_LASER, 10);
