@@ -11,11 +11,6 @@ CProjectileKZ(pGameWorld, Owner, Pos, Dir, Type, CGameWorld::KZ_ENTTYPE_PROJECTI
 	m_OrigStartTick = Server()->Tick();
 	m_pInsideChar = GameServer()->GetPlayerChar(Owner);
 
-	if(m_pInsideChar)
-		m_DDRaceTeam = m_pInsideChar->Team();
-	else
-		m_DDRaceTeam = -1;
-
     //GameWorld()->InsertEntity(this); Dont, this is already done is base class
 }
 
@@ -57,9 +52,6 @@ void CProjectilePvP::OnCollide(vec2 PrevPos, int TileIndex, vec2 *pPreIntersectP
 void CProjectilePvP::OnCharacterCollide(vec2 PrevPos, CCharacter *pChar, vec2 *pIntersectPos)
 {
 	if(m_pInsideChar)
-		return;
-
-	if(m_DDRaceTeam != -1 && m_DDRaceTeam != pChar->Team())
 		return;
 
 	switch (m_Type)

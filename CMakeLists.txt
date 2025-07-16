@@ -2746,6 +2746,10 @@ if(SERVER)
     entities/kz/projectile_kz.h
     entities/kz/projectile_pvp.cpp
     entities/kz/projectile_pvp.h
+    entities/kz/laser_kz.cpp
+    entities/kz/laser_kz.h
+    entities/kz/laser_pvp.cpp
+    entities/kz/laser_pvp.h
     entities/laser.cpp
     entities/laser.h
     entities/light.cpp

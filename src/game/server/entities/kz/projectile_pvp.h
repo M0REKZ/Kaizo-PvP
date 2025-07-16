@@ -15,8 +15,6 @@ public:
 
 		virtual void Tick() override;
 
-		int m_DDRaceTeam;
-
 protected:
 		int m_OrigStartTick;
 		CCharacter * m_pInsideChar;

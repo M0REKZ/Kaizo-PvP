@@ -35,6 +35,7 @@ protected:
 
     int m_Bouncing; //TODO +KZ
 	int m_TuneZone;
+    CCharacter *m_pSoloChar;
 
     virtual void Move();
     virtual int Collide(vec2 PrevPos, vec2 *pPreIntersectPos = nullptr, vec2 *pIntersectPos = nullptr, int *pTeleNr = nullptr);

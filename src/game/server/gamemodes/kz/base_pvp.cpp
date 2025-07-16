@@ -12,6 +12,7 @@
 #include <game/version.h>
 
 #include <game/server/entities/kz/projectile_pvp.h>
+#include <game/server/entities/kz/laser_pvp.h>
 
 #define GAME_TYPE_NAME "PVP"
 #define TEST_TYPE_NAME "TestPVP"
@@ -244,7 +245,7 @@ bool CGameControllerBasePvP::CharacterFireWeapon(CCharacter *pChar)
 
 		case WEAPON_LASER:
 		{
-			//new CLaser(GameWorld(), pChar->m_Pos, Direction, GameServer()->Tuning()->m_LaserReach, pChar->GetPlayer()->GetCid());
+			new CLaserPvP(&GameServer()->m_World,pChar->m_Pos, Direction, GameServer()->Tuning()->m_LaserReach, pChar->GetPlayer()->GetCid(), WEAPON_LASER);
 			GameServer()->CreateSound(pChar->m_Pos, SOUND_LASER_FIRE);
 		} break;
 

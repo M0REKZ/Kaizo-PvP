@@ -15,6 +15,10 @@ CProjectileKZ::CProjectileKZ(CGameWorld *pGameWorld, int Owner, vec2 Pos, vec2 D
 
     m_SnapVel *= 50;
 	
+    m_pSoloChar = GameServer()->GetPlayerChar(m_Owner);
+
+    if(!(m_pSoloChar && m_pSoloChar->Core()->m_Solo))
+        m_pSoloChar = nullptr;
 
 	m_PrevTuneZone = -1;
 	m_TuneZone = GameServer()->Collision()->IsTune(GameServer()->Collision()->GetMapIndex(m_Pos));
@@ -72,7 +76,7 @@ void CProjectileKZ::Tick()
     vec2 TilePreIntersectPos;
     int TeleNr = 0;
 
-    CCharacter* pChar = GameWorld()->IntersectCharacter(PrevPos, m_Pos, 0, CharacterIntersectPos);
+    CCharacter* pChar = GameWorld()->IntersectCharacter(PrevPos, m_Pos, 0, CharacterIntersectPos, nullptr, m_Owner, m_pSoloChar);
     int Collided = Collide(PrevPos, &TilePreIntersectPos, &TileIntersectPos, &TeleNr);
 
     if(pChar && Collided)
