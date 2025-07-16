@@ -11,7 +11,7 @@
 #include <game/server/score.h>
 #include <game/version.h>
 
-#define GAME_TYPE_NAME "reDM"
+#define GAME_TYPE_NAME "DM-rw"
 #define TEST_TYPE_NAME "TestDM"
 
 CGameControllerDM::CGameControllerDM(class CGameContext *pGameServer) :
