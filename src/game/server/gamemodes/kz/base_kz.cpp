@@ -113,7 +113,7 @@ void CGameControllerBaseKZ::Tick()
 			{
 				pChar->Reset();
 			}
-
+			pPlayer->m_ScoreKZ = 0;
 			pPlayer->Respawn();
 		}
 		return;
@@ -162,14 +162,6 @@ void CGameControllerBaseKZ::EndMatch(int Ticks)
 {
 	GameServer()->m_World.m_Paused = true;
 	m_PausedTicks = Ticks;
-
-	for(auto pPlayer : GameServer()->m_apPlayers)
-	{
-		if(!pPlayer)
-			continue;
-
-		pPlayer->m_ScoreKZ = 0;
-	}
 }
 
 bool CGameControllerBaseKZ::IsFriendlyFire(int ClientID1, int ClientID2)
