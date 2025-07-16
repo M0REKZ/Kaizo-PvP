@@ -411,8 +411,8 @@ void IGameController::OnPlayerConnect(CPlayer *pPlayer)
 			Msg.m_GameFlags = m_GameFlags;
 			Msg.m_MatchCurrent = 1;
 			Msg.m_MatchNum = 0;
-			Msg.m_ScoreLimit = 0;
-			Msg.m_TimeLimit = 0;
+			Msg.m_ScoreLimit = g_Config.m_SvScoreLimit; //+KZ modified
+			Msg.m_TimeLimit = g_Config.m_SvTimeLimit; //+KZ modified
 			Server()->SendPackMsg(&Msg, MSGFLAG_VITAL | MSGFLAG_NORECORD, ClientId);
 		}
 
@@ -582,6 +582,9 @@ void IGameController::Snap(int SnappingClient)
 	pGameInfoObj->m_RoundNum = 0;
 	pGameInfoObj->m_RoundCurrent = m_RoundCount + 1;
 
+	pGameInfoObj->m_ScoreLimit = g_Config.m_SvScoreLimit; // +KZ
+	pGameInfoObj->m_TimeLimit = g_Config.m_SvTimeLimit; // +KZ
+
 	CCharacter *pChr;
 	CPlayer *pPlayer = SnappingClient != SERVER_DEMO_CLIENT ? GameServer()->m_apPlayers[SnappingClient] : nullptr;
 	CPlayer *pPlayer2;
@@ -608,7 +611,7 @@ void IGameController::Snap(int SnappingClient)
 		return;
 
 	pGameInfoEx->m_Flags =
-		GAMEINFOFLAG_TIMESCORE |
+		//GAMEINFOFLAG_TIMESCORE | //+KZ
 		GAMEINFOFLAG_GAMETYPE_RACE |
 		GAMEINFOFLAG_GAMETYPE_DDRACE |
 		GAMEINFOFLAG_GAMETYPE_DDNET |

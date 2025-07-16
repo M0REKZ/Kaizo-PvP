@@ -281,6 +281,7 @@ public:
 	CNetObj_PlayerInput &GetLatestPrevInputKZ() { return m_LatestPrevInput; }
 	int &GetLastNoAmmoSoundKZ() { return m_LastNoAmmoSound; }
 	int &GetAttackTickKZ() { return m_AttackTick; }
+	int &GetNumObjectsHitKZ() { return m_NumObjectsHit; }
 };
 
 #endif

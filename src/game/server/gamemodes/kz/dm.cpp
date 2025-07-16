@@ -22,3 +22,29 @@ CGameControllerDM::CGameControllerDM(class CGameContext *pGameServer) :
 }
 
 CGameControllerDM::~CGameControllerDM() = default;
+
+int CGameControllerDM::DoWinCheck()
+{
+
+	int HighScore = -1;
+	int BestPlayer = -1;
+
+	for(auto pPlayer : GameServer()->m_apPlayers)
+	{
+		if(!pPlayer)
+			continue;
+
+		if(pPlayer->m_ScoreKZ > HighScore)
+		{
+			BestPlayer = pPlayer->GetCid();
+			HighScore = pPlayer->m_ScoreKZ;
+		}
+	}
+
+	if(HighScore >= g_Config.m_SvScoreLimit)
+	{
+		return 5 * Server()->TickSpeed();
+	}
+
+	return 0;
+}

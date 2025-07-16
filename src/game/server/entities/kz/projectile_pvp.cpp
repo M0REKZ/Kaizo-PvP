@@ -9,7 +9,6 @@ CProjectilePvP::CProjectilePvP(CGameWorld *pGameWorld, int Owner, vec2 Pos, vec2
 CProjectileKZ(pGameWorld, Owner, Pos, Dir, Type, CGameWorld::KZ_ENTTYPE_PROJECTILE_PVP)
 {
 	m_OrigStartTick = Server()->Tick();
-	m_pInsideChar = GameServer()->GetPlayerChar(Owner);
 
     //GameWorld()->InsertEntity(this); Dont, this is already done is base class
 }
@@ -19,9 +18,6 @@ void CProjectilePvP::Tick()
 	vec2 PrevPos = m_Pos;
 
 	CProjectileKZ::Tick();
-
-	if(m_pInsideChar && GameWorld()->ClosestCharacter(m_Pos,28.0f,nullptr) != m_pInsideChar)
-		m_pInsideChar = nullptr;
 	
 	if(m_LifeSpan == -1 && m_Type == WEAPON_GRENADE)
 	{
@@ -51,9 +47,6 @@ void CProjectilePvP::OnCollide(vec2 PrevPos, int TileIndex, vec2 *pPreIntersectP
 
 void CProjectilePvP::OnCharacterCollide(vec2 PrevPos, CCharacter *pChar, vec2 *pIntersectPos)
 {
-	if(m_pInsideChar)
-		return;
-
 	switch (m_Type)
 	{
 		case WEAPON_GRENADE:

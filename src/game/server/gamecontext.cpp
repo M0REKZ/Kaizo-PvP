@@ -4035,12 +4035,10 @@ void CGameContext::OnInit(const void *pPersistentData)
 		}
 	}
 
-	if(!str_comp(Config()->m_SvGametype, "mod"))
-		m_pController = new CGameControllerMod(this);
-	else if(!str_comp(Config()->m_SvGametype, "dm"))
+	if(!str_comp(Config()->m_SvGametype, "dm"))
 		m_pController = new CGameControllerDM(this);
 	else
-		m_pController = new CGameControllerDDRace(this);
+		m_pController = new CGameControllerDM(this);
 
 	ReadCensorList();
 

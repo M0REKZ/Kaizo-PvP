@@ -10,5 +10,7 @@ public:
 	CGameControllerDM(class CGameContext *pGameServer);
 	~CGameControllerDM();
 
+	virtual int DoWinCheck() override;
+
 };
 #endif // GAME_SERVER_GAMEMODES_DDRACE_H

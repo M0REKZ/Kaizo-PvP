@@ -30,6 +30,7 @@ protected:
     int m_PrevTuneZone;
     float m_Curvature = 0.f;
     float m_Speed = 0.f;
+    CCharacter * m_pInsideChar;
 
 	// DDRace
 

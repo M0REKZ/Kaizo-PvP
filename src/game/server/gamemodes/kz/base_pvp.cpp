@@ -13,6 +13,7 @@
 
 #include <game/server/entities/kz/projectile_pvp.h>
 #include <game/server/entities/kz/laser_pvp.h>
+#include <game/server/entities/kz/pickup_pvp.h>
 
 #define GAME_TYPE_NAME "PVP"
 #define TEST_TYPE_NAME "TestPVP"
@@ -126,6 +127,9 @@ bool CGameControllerBasePvP::OnCharacterTakeDamage(CCharacter *pChar, vec2 Force
 
 bool CGameControllerBasePvP::CharacterFireWeapon(CCharacter *pChar)
 {
+	if(pChar->GetActiveWeapon() == WEAPON_NINJA)
+		return false;
+
 	if(pChar->GetReloadTimerKZ() != 0)
 		return true;
 
@@ -249,17 +253,6 @@ bool CGameControllerBasePvP::CharacterFireWeapon(CCharacter *pChar)
 			GameServer()->CreateSound(pChar->m_Pos, SOUND_LASER_FIRE);
 		} break;
 
-		case WEAPON_NINJA:
-		{
-			//pChar->m_NumObjectsHit = 0;
-
-			pChar->GetCoreKZ().m_Ninja.m_ActivationDir = Direction;
-			//pChar->GetCoreKZ().m_Ninja.m_CurrentMoveTime = g_pData->m_Weapons.m_Ninja.m_Movetime * Server()->TickSpeed() / 1000;
-			pChar->GetCoreKZ().m_Ninja.m_OldVelAmount = length(pChar->GetCoreKZ().m_Vel);
-
-			GameServer()->CreateSound(pChar->m_Pos, SOUND_NINJA_FIRE);
-		} break;
-
 	}
 
 	pChar->GetAttackTickKZ() = Server()->Tick();
@@ -275,4 +268,72 @@ bool CGameControllerBasePvP::CharacterFireWeapon(CCharacter *pChar)
 	}
 
 	return true;
+}
+
+int CGameControllerBasePvP::OnCharacterDeath(CCharacter *pVictim, CPlayer *pKiller, int Weapon)
+{
+	if(!pVictim || !pKiller)
+		return 0;
+
+	CPlayer *pPlayer = pVictim->GetPlayer();
+
+	if(!pPlayer)
+		return 0;
+
+	if(pPlayer == pKiller)
+	{
+		pKiller->m_ScoreKZ--;
+	}
+	else
+	{
+		pKiller->m_ScoreKZ++;
+	}
+
+	return 0;
+}
+
+bool CGameControllerBasePvP::OnEntity(int Index, int x, int y, int Layer, int Flags, bool Initial, int Number)
+{
+	if(Index != ENTITY_ARMOR_1 && Index != ENTITY_HEALTH_1 && Index != ENTITY_WEAPON_GRENADE && Index != ENTITY_WEAPON_LASER && Index != ENTITY_WEAPON_SHOTGUN && Index != ENTITY_POWERUP_NINJA)
+		return CGameControllerBaseKZ::OnEntity(Index, x, y, Layer, Flags, Initial, Number);
+
+	const vec2 Pos(x * 32.0f + 16.0f, y * 32.0f + 16.0f);
+
+	int Type = -1;
+	int SubType = 0;
+
+	if(Index == ENTITY_ARMOR_1)
+		Type = POWERUP_ARMOR;
+	else if(Index == ENTITY_HEALTH_1)
+		Type = POWERUP_HEALTH;
+	else if(Index == ENTITY_WEAPON_SHOTGUN)
+	{
+		Type = POWERUP_WEAPON;
+		SubType = WEAPON_SHOTGUN;
+	}
+	else if(Index == ENTITY_WEAPON_GRENADE)
+	{
+		Type = POWERUP_WEAPON;
+		SubType = WEAPON_GRENADE;
+	}
+	else if(Index == ENTITY_WEAPON_LASER)
+	{
+		Type = POWERUP_WEAPON;
+		SubType = WEAPON_LASER;
+	}
+	else if(Index == ENTITY_POWERUP_NINJA)
+	{
+		Type = POWERUP_NINJA;
+		SubType = WEAPON_NINJA;
+	}
+
+	if(Type != -1)
+	{
+		int PickupFlags = TileFlagsToPickupFlags(Flags);
+		CPickupPvP *pPickup = new CPickupPvP(&GameServer()->m_World, Type, SubType, Layer, Number, PickupFlags);
+		pPickup->m_Pos = Pos;
+		return true;
+	}
+
+	return false;
 }

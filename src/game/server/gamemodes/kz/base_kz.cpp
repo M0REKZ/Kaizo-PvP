@@ -97,11 +97,25 @@ void CGameControllerBaseKZ::Tick()
 {
 	if(m_PausedTicks > 0)
 	{
+		m_PausedTicks--;
 		return;
 	}
 	else if(m_PausedTicks == 0)
 	{
 		m_PausedTicks = -1;
+		GameServer()->m_World.m_Paused = false;
+		for(auto pPlayer : GameServer()->m_apPlayers)
+		{
+			if(!pPlayer)
+				continue;
+
+			if(CCharacter *pChar = pPlayer->GetCharacter())
+			{
+				pChar->Reset();
+			}
+
+			pPlayer->Respawn();
+		}
 		return;
 	}
 
@@ -148,6 +162,14 @@ void CGameControllerBaseKZ::EndMatch(int Ticks)
 {
 	GameServer()->m_World.m_Paused = true;
 	m_PausedTicks = Ticks;
+
+	for(auto pPlayer : GameServer()->m_apPlayers)
+	{
+		if(!pPlayer)
+			continue;
+
+		pPlayer->m_ScoreKZ = 0;
+	}
 }
 
 bool CGameControllerBaseKZ::IsFriendlyFire(int ClientID1, int ClientID2)

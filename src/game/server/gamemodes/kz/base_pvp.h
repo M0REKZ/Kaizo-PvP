@@ -12,6 +12,8 @@ public:
 
 	virtual bool OnCharacterTakeDamage(CCharacter *pChar, vec2 Force, int Dmg, int From, int Weapon) override;
 	virtual bool CharacterFireWeapon(CCharacter *pChar) override;
+	virtual int OnCharacterDeath(class CCharacter *pVictim, class CPlayer *pKiller, int Weapon) override;
+	virtual bool OnEntity(int Index, int x, int y, int Layer, int Flags, bool Initial, int Number = 0) override;
 
 };
 #endif // GAME_SERVER_GAMEMODES_DDRACE_H
