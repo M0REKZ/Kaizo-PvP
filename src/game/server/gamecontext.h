@@ -605,6 +605,7 @@ private:
 	//+KZ
 
 	static void ConShutdownRejoin(IConsole::IResult *pResult, void *pUserData);
+	static void ConMoveKZBot(IConsole::IResult *pResult, void *pUserData);
 
 public:
 	CLayers *Layers() { return &m_Layers; }
@@ -638,6 +639,9 @@ public:
 	void SendGameMsg(int GameMsgId, int ClientId) const;
 	void SendGameMsg(int GameMsgId, int ParaI1, int ClientId) const;
 	void SendGameMsg(int GameMsgId, int ParaI1, int ParaI2, int ParaI3, int ClientId) const;
+
+	virtual void HandleKZBot(int CID, CNetObj_PlayerInput &Input) override; //+KZ
+	int CountPlayersKZ();
 };
 
 static inline bool CheckClientId(int ClientId)

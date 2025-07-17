@@ -88,7 +88,8 @@ class CServer : public IServer
 	int m_PreviousDebugDummies = 0;
 	void UpdateDebugDummies(bool ForceDisconnect);
 #endif
-
+	int m_PreviousKZBots = 0;
+	void UpdateKZBots(bool ForceDisconnect); //+KZ
 public:
 	class IGameServer *GameServer() { return m_pGameServer; }
 	class CConfig *Config() { return m_pConfig; }
@@ -166,6 +167,12 @@ public:
 		NETADDR m_DebugDummyAddr;
 		std::array<char, NETADDR_MAXSTRSIZE> m_aDebugDummyAddrString;
 		std::array<char, NETADDR_MAXSTRSIZE> m_aDebugDummyAddrStringNoPort;
+
+		//+KZ
+		bool m_KZBot; //+KZ
+		NETADDR m_KZBotAddr;
+		std::array<char, NETADDR_MAXSTRSIZE> m_aKZBotAddrString;
+		std::array<char, NETADDR_MAXSTRSIZE> m_aKZBotAddrStringNoPort;
 
 		const IConsole::CCommandInfo *m_pRconCmdToSend;
 		enum

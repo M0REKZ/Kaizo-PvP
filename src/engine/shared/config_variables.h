@@ -780,3 +780,6 @@ MACRO_CONFIG_INT(SvTimeLimit, sv_time_limit, 0, 0, 2147483647, CFGFLAG_SERVER, "
 MACRO_CONFIG_INT(SvTeamdamage, sv_team_damage, 0, 0, 1, CFGFLAG_SERVER, "Team Damage")
 MACRO_CONFIG_INT(SvPickupParticles, sv_pickup_particles, 1, 0, 1, CFGFLAG_SERVER, "Whether or not to enable particles when a pickup is yet to respawn")
 MACRO_CONFIG_STR(SvChatDiscordWebhook, sv_chat_discord_webhook, 512, "", CFGFLAG_SERVER, "Where to send chat messages written by players")
+
+MACRO_CONFIG_INT(SvKZBots, sv_kzbots, 0, 0, MAX_CLIENTS, CFGFLAG_SERVER, "Add KZ Bots")
+MACRO_CONFIG_INT(SvKZBotsAI, sv_kzbots_ai, 0, 0, 99, CFGFLAG_SERVER, "KZ Bots AI (0 = +KZ AI, 1 = Pointer AI)")

@@ -2744,6 +2744,12 @@ if(SERVER)
     entities/gun.h
     entities/kz/flag.cpp
     entities/kz/flag.h
+    entities/kz/kz_bot_ai/base_ai.cpp
+    entities/kz/kz_bot_ai/base_ai.h
+    entities/kz/kz_bot_ai/kz_ai.cpp
+    entities/kz/kz_bot_ai/kz_ai.h
+    entities/kz/kz_bot_ai/pointer_ai.cpp
+    entities/kz/kz_bot_ai/pointer_ai.h
     entities/kz/particle_kz.cpp
     entities/kz/particle_kz.h
     entities/kz/pickup_pvp.cpp

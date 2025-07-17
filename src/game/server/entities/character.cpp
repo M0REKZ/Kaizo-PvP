@@ -10,6 +10,8 @@
 #include <engine/antibot.h>
 #include <engine/shared/config.h>
 
+#include <engine/server/server.h>
+
 #include <game/generated/protocol.h>
 #include <game/generated/server_data.h>
 #include <game/mapitems.h>
@@ -20,6 +22,9 @@
 #include <game/server/player.h>
 #include <game/server/score.h>
 #include <game/server/teams.h>
+
+#include "kz/kz_bot_ai/kz_ai.h"
+#include "kz/kz_bot_ai/pointer_ai.h"
 
 MACRO_ALLOC_POOL_ID_IMPL(CCharacter, MAX_CLIENTS)
 
@@ -44,6 +49,15 @@ CCharacter::CCharacter(CGameWorld *pWorld, CNetObj_PlayerInput LastInput) :
 	for(float &CurrentTimeCp : m_aCurrentTimeCp)
 	{
 		CurrentTimeCp = 0.0f;
+	}
+}
+
+CCharacter::~CCharacter()
+{
+	if(m_pKZBotAI)
+	{
+		delete m_pKZBotAI;
+		m_pKZBotAI = nullptr;
 	}
 }
 
@@ -1102,7 +1116,7 @@ void CCharacter::SnapCharacter(int SnappingClient, int Id)
 		AmmoCount = (m_FreezeTime == 0) ? m_Core.m_aWeapons[m_Core.m_ActiveWeapon].m_Ammo : 0;
 	}
 
-	if(GetPlayer()->IsAfk() || GetPlayer()->IsPaused())
+	if(!(((CServer*)Server())->m_aClients[m_pPlayer->GetCid()].m_KZBot) && (GetPlayer()->IsAfk() || GetPlayer()->IsPaused()))
 	{
 		if(m_FreezeTime > 0 || m_Core.m_DeepFrozen || m_Core.m_LiveFrozen)
 			Emote = EMOTE_NORMAL;
@@ -2552,4 +2566,36 @@ void CCharacter::SwapClients(int Client1, int Client2)
 {
 	const int HookedPlayer = m_Core.HookedPlayer();
 	m_Core.SetHookedPlayer(HookedPlayer == Client1 ? Client2 : HookedPlayer == Client2 ? Client1 : HookedPlayer);
+}
+
+//+KZ
+
+void CCharacter::HandleKZBot(CNetObj_PlayerInput &Input)
+{
+	if(!(GameServer()->CountPlayersKZ()))
+		return;
+	
+	if(m_pKZBotAI && g_Config.m_SvKZBotsAI != m_pKZBotAI->GetAIType())
+	{
+		delete m_pKZBotAI;
+		m_pKZBotAI = nullptr;
+	}
+	
+	if(!m_pKZBotAI)
+	{
+		switch(g_Config.m_SvKZBotsAI)
+		{
+			case 0: //+KZ's IA
+				m_pKZBotAI = new CKZBotAI(this);
+				break;
+			case 1: //Pointer's hardest IA
+				m_pKZBotAI = new CPointerBotAI(this);
+				break;
+		}
+	}
+
+	if(m_pKZBotAI)
+	{
+		m_pKZBotAI->HandleInput(Input);
+	}
 }

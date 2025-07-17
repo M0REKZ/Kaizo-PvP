@@ -204,7 +204,7 @@ public:
 	void AfkTimer();
 	void SetAfk(bool Afk);
 	void SetInitialAfk(bool Afk);
-	bool IsAfk() const { return m_Afk; }
+	bool IsAfk() const; //{ return m_Afk; } +KZ modified
 
 	int64_t m_LastPlaytime;
 	int64_t m_LastEyeEmote;
@@ -240,6 +240,8 @@ public:
 	//+KZ
 	
 	int m_ScoreKZ = 0;
+	bool m_IsDead = false;
+	void HandleKZBot(CNetObj_PlayerInput &Input);
 };
 
 #endif

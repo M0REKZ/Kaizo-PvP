@@ -564,6 +564,8 @@ int CServer::Init()
 		Client.m_Latency = 0;
 		Client.m_Sixup = false;
 		Client.m_RedirectDropTime = 0;
+
+		Client.m_KZBot = false; //+KZ
 	}
 
 	m_CurrentGameTick = MIN_TICK;
@@ -660,6 +662,10 @@ const NETADDR *CServer::ClientAddr(int ClientId) const
 		return &m_aClients[ClientId].m_DebugDummyAddr;
 	}
 #endif
+	if(m_aClients[ClientId].m_KZBot)
+	{
+		return &m_aClients[ClientId].m_KZBotAddr;
+	}
 	return m_NetServer.ClientAddr(ClientId);
 }
 
@@ -673,6 +679,10 @@ const std::array<char, NETADDR_MAXSTRSIZE> &CServer::ClientAddrStringImpl(int Cl
 		return IncludePort ? m_aClients[ClientId].m_aDebugDummyAddrString : m_aClients[ClientId].m_aDebugDummyAddrStringNoPort;
 	}
 #endif
+	if(m_aClients[ClientId].m_KZBot)
+	{
+		return IncludePort ? m_aClients[ClientId].m_aKZBotAddrString : m_aClients[ClientId].m_aKZBotAddrStringNoPort;
+	}
 	return m_NetServer.ClientAddrString(ClientId, IncludePort);
 }
 
@@ -1088,6 +1098,8 @@ int CServer::NewClientNoAuthCallback(int ClientId, void *pUser)
 {
 	CServer *pThis = (CServer *)pUser;
 
+	pThis->m_aClients[ClientId].m_KZBot = false; //+KZ
+
 	pThis->m_aClients[ClientId].m_DnsblState = CClient::DNSBL_STATE_NONE;
 
 	pThis->m_aClients[ClientId].m_State = CClient::STATE_CONNECTING;
@@ -1121,6 +1133,9 @@ int CServer::NewClientNoAuthCallback(int ClientId, void *pUser)
 int CServer::NewClientCallback(int ClientId, void *pUser, bool Sixup)
 {
 	CServer *pThis = (CServer *)pUser;
+
+	pThis->m_aClients[ClientId].m_KZBot = false; //+KZ
+
 	pThis->m_aClients[ClientId].m_State = CClient::STATE_PREAUTH;
 	pThis->m_aClients[ClientId].m_DnsblState = CClient::DNSBL_STATE_NONE;
 	pThis->m_aClients[ClientId].m_aName[0] = 0;
@@ -1231,6 +1246,8 @@ int CServer::DelClientCallback(int ClientId, const char *pReason, void *pUser)
 	pThis->m_aClients[ClientId].m_Sixup = false;
 	pThis->m_aClients[ClientId].m_RedirectDropTime = 0;
 	pThis->m_aClients[ClientId].m_HasPersistentData = false;
+
+	pThis->m_aClients[ClientId].m_KZBot = false; //+KZ
 
 	pThis->GameServer()->TeehistorianRecordPlayerDrop(ClientId, pReason);
 	pThis->Antibot()->OnEngineClientDrop(ClientId, pReason);
@@ -3096,6 +3113,7 @@ int CServer::Run()
 #ifdef CONF_DEBUG
 					UpdateDebugDummies(true);
 #endif
+					UpdateKZBots(true); //+KZ
 					GameServer()->OnShutdown(m_pPersistentData);
 
 					for(int ClientId = 0; ClientId < MAX_CLIENTS; ClientId++)
@@ -3151,6 +3169,7 @@ int CServer::Run()
 #ifdef CONF_DEBUG
 				UpdateDebugDummies(false);
 #endif
+				UpdateKZBots(false); //+KZ
 
 				for(int c = 0; c < MAX_CLIENTS; c++)
 				{
@@ -4426,4 +4445,80 @@ void CServer::SetLoggers(std::shared_ptr<ILogger> &&pFileLogger, std::shared_ptr
 {
 	m_pFileLogger = pFileLogger;
 	m_pStdoutLogger = pStdoutLogger;
+}
+
+void CServer::UpdateKZBots(bool ForceDisconnect)
+{
+	if(m_PreviousKZBots == g_Config.m_SvKZBots && !ForceDisconnect)
+	{
+		for(int DummyIndex = 0; DummyIndex < maximum(m_PreviousKZBots, g_Config.m_SvKZBots); ++DummyIndex)
+		{
+			const int ClientId = MaxClients() - DummyIndex - 1;
+			if(!m_aClients[ClientId].m_KZBot)
+				continue;
+			
+			CNetObj_PlayerInput Input = {0};
+			//Input.m_Direction = (ClientId & 1) ? -1 : 1;
+			GameServer()->HandleKZBot(ClientId,Input);
+			m_aClients[ClientId].m_aInputs[0].m_GameTick = Tick() + 1;
+			mem_copy(m_aClients[ClientId].m_aInputs[0].m_aData, &Input, minimum(sizeof(Input), sizeof(m_aClients[ClientId].m_aInputs[0].m_aData)));
+			m_aClients[ClientId].m_LatestInput = m_aClients[ClientId].m_aInputs[0];
+			m_aClients[ClientId].m_CurrentInput = 0;
+		}
+	}
+	else
+	{
+		g_Config.m_SvKZBots = std::clamp(g_Config.m_SvKZBots, 0, MaxClients());
+		for(int DummyIndex = 0; DummyIndex < maximum(m_PreviousKZBots, g_Config.m_SvKZBots); ++DummyIndex)
+		{
+			const bool AddDummy = !ForceDisconnect && DummyIndex < g_Config.m_SvKZBots;
+			const int ClientId = MaxClients() - DummyIndex - 1;
+			if(AddDummy && m_aClients[ClientId].m_State == CClient::STATE_EMPTY)
+			{
+				NewClientCallback(ClientId, this, false);
+				m_aClients[ClientId].m_KZBot = true;
+
+				// See https://en.wikipedia.org/wiki/Unique_local_address
+				m_aClients[ClientId].m_KZBotAddr.type = NETTYPE_IPV6;
+				m_aClients[ClientId].m_KZBotAddr.ip[0] = 0xfd;
+				// Global ID (40 bits): random
+				secure_random_fill(&m_aClients[ClientId].m_KZBotAddr.ip[1], 5);
+				// Subnet ID (16 bits): constant
+				m_aClients[ClientId].m_KZBotAddr.ip[6] = 0xc0;
+				m_aClients[ClientId].m_KZBotAddr.ip[7] = 0xde;
+				// Interface ID (64 bits): set to client ID
+				m_aClients[ClientId].m_KZBotAddr.ip[8] = 0x00;
+				m_aClients[ClientId].m_KZBotAddr.ip[9] = 0x00;
+				m_aClients[ClientId].m_KZBotAddr.ip[10] = 0x00;
+				m_aClients[ClientId].m_KZBotAddr.ip[11] = 0x00;
+				uint_to_bytes_be(&m_aClients[ClientId].m_KZBotAddr.ip[12], ClientId);
+				// Port: random like normal clients
+				m_aClients[ClientId].m_KZBotAddr.port = (secure_rand() % (65535 - 1024)) + 1024;
+				net_addr_str(&m_aClients[ClientId].m_KZBotAddr, m_aClients[ClientId].m_aKZBotAddrString.data(), m_aClients[ClientId].m_aKZBotAddrString.size(), true);
+				net_addr_str(&m_aClients[ClientId].m_KZBotAddr, m_aClients[ClientId].m_aKZBotAddrStringNoPort.data(), m_aClients[ClientId].m_aKZBotAddrStringNoPort.size(), false);
+
+				GameServer()->OnClientConnected(ClientId, nullptr);
+				m_aClients[ClientId].m_State = CClient::STATE_INGAME;
+				str_format(m_aClients[ClientId].m_aName, sizeof(m_aClients[ClientId].m_aName), "Aimbot %d", DummyIndex + 1);
+				GameServer()->OnClientEnter(ClientId);
+			}
+			else if(!AddDummy && m_aClients[ClientId].m_KZBot)
+			{
+				DelClientCallback(ClientId, "Dropping Bot", this);
+			}
+			
+			if(AddDummy && m_aClients[ClientId].m_KZBot)
+			{
+				CNetObj_PlayerInput Input = {0};
+				//Input.m_Direction = (ClientId & 1) ? -1 : 1;
+				GameServer()->HandleKZBot(ClientId,Input);
+				m_aClients[ClientId].m_aInputs[0].m_GameTick = Tick() + 1;
+				mem_copy(m_aClients[ClientId].m_aInputs[0].m_aData, &Input, minimum(sizeof(Input), sizeof(m_aClients[ClientId].m_aInputs[0].m_aData)));
+				m_aClients[ClientId].m_LatestInput = m_aClients[ClientId].m_aInputs[0];
+				m_aClients[ClientId].m_CurrentInput = 0;
+			}
+		}
+		
+		m_PreviousKZBots = ForceDisconnect ? 0 : g_Config.m_SvKZBots;
+	}
 }

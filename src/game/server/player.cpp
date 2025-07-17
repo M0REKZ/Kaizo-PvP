@@ -15,6 +15,8 @@
 #include <game/gamecore.h>
 #include <game/teamscore.h>
 
+#include <engine/server/server.h>
+
 MACRO_ALLOC_POOL_ID_IMPL(CPlayer, MAX_CLIENTS)
 
 IServer *CPlayer::Server() const { return m_pGameServer->Server(); }
@@ -28,6 +30,46 @@ CPlayer::CPlayer(CGameContext *pGameServer, uint32_t UniqueClientId, int ClientI
 	m_NumInputs = 0;
 	Reset();
 	GameServer()->Antibot()->OnPlayerInit(m_ClientId);
+
+	if(((CServer*)Server())->m_aClients[m_ClientId].m_KZBot)
+	{
+		str_copy(m_TeeInfos.m_aSkinName, "0_Cyborg Greyfox_KZ", sizeof(m_TeeInfos.m_aSkinName));
+		for(int p = 0; p < protocol7::NUM_SKINPARTS; p++)
+		{
+			m_TeeInfos.m_aUseCustomColors[p] = true;
+
+			if(p==0)
+			{
+				str_copy(m_TeeInfos.m_apSkinPartNames[p], "fox", sizeof(m_TeeInfos.m_apSkinPartNames[p]));
+				m_TeeInfos.m_aSkinPartColors[p] = 1769560;
+				continue;
+			}
+
+			if(p==1)
+			{
+				str_copy(m_TeeInfos.m_apSkinPartNames[p], "warpaint", sizeof(m_TeeInfos.m_apSkinPartNames[p]));
+				m_TeeInfos.m_aSkinPartColors[p] = 4278190080;
+				continue;
+			}
+			
+			if(p==2)
+			{
+				str_copy(m_TeeInfos.m_apSkinPartNames[p], "hair", sizeof(m_TeeInfos.m_apSkinPartNames[p]));
+				continue;
+			}
+
+			if(p==5)
+			{
+				str_copy(m_TeeInfos.m_apSkinPartNames[p], "negative", sizeof(m_TeeInfos.m_apSkinPartNames[p]));
+				m_TeeInfos.m_aSkinPartColors[p] = 65408;
+				continue;
+			}
+			
+
+			str_copy(m_TeeInfos.m_apSkinPartNames[p], "standard", sizeof(m_TeeInfos.m_apSkinPartNames[p]));
+        }
+
+	}
 }
 
 CPlayer::~CPlayer()
@@ -211,7 +253,7 @@ void CPlayer::Tick()
 		}
 	}
 
-	if(Server()->GetNetErrorString(m_ClientId)[0])
+	if(Server()->GetNetErrorString(m_ClientId)[0] && !(((CServer*)Server())->m_aClients[m_ClientId].m_KZBot))
 	{
 		SetInitialAfk(true);
 
@@ -381,6 +423,8 @@ void CPlayer::Snap(int SnappingClient)
 			pPlayerInfo->m_PlayerFlags |= protocol7::PLAYERFLAG_AIM;
 		if(Server()->GetAuthedState(m_ClientId) && ((SnappingClient >= 0 && Server()->GetAuthedState(SnappingClient)) || !Server()->HasAuthHidden(m_ClientId)))
 			pPlayerInfo->m_PlayerFlags |= protocol7::PLAYERFLAG_ADMIN;
+		if(((CServer*)Server())->m_aClients[m_ClientId].m_KZBot) //+KZ
+			pPlayerInfo->m_PlayerFlags |= protocol7::PLAYERFLAG_BOT;
 
 		// Times are in milliseconds for 0.7
 		pPlayerInfo->m_Score = m_ScoreKZ; //+KZ modified
@@ -469,7 +513,7 @@ void CPlayer::Snap(int SnappingClient)
 		pDDNetPlayer->m_AuthLevel = AUTHED_NO;
 
 	pDDNetPlayer->m_Flags = 0;
-	if(m_Afk)
+	if(((CServer*)Server())->m_aClients[m_ClientId].m_KZBot ? false : m_Afk) //+KZ modified
 		pDDNetPlayer->m_Flags |= EXPLAYERFLAG_AFK;
 	if(m_Paused == PAUSE_SPEC)
 		pDDNetPlayer->m_Flags |= EXPLAYERFLAG_SPEC;
@@ -1038,4 +1082,18 @@ void CPlayer::CCameraInfo::Reset()
 	m_Zoom = 1.0f;
 	m_Deadzone = 0.0f;
 	m_FollowFactor = 0.0f;
+}
+
+//+KZ
+
+void CPlayer::HandleKZBot(CNetObj_PlayerInput &Input)
+{
+	if(!GetCharacter())
+		return;
+	GetCharacter()->HandleKZBot(Input);
+}
+
+bool CPlayer::IsAfk() const
+{
+	return m_Afk || ((CServer*)Server())->m_aClients[m_ClientId].m_KZBot; //to not count bot in votes +KZ
 }

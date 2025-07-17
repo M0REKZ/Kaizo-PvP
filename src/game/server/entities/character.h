@@ -8,10 +8,13 @@
 #include <game/race_state.h>
 #include <game/server/save.h>
 
+#include <game/server/entities/kz/kz_bot_ai/base_ai.h>
+
 class CGameTeams;
 class CGameWorld;
 class IAntibot;
 struct CAntibotCharacterData;
+class CBaseKZBotAI;
 
 enum
 {
@@ -34,6 +37,7 @@ class CCharacter : public CEntity
 
 public:
 	CCharacter(CGameWorld *pWorld, CNetObj_PlayerInput LastInput);
+	~CCharacter(); // +KZ
 
 	void Reset() override;
 	void Destroy() override;
@@ -282,6 +286,10 @@ public:
 	int &GetLastNoAmmoSoundKZ() { return m_LastNoAmmoSound; }
 	int &GetAttackTickKZ() { return m_AttackTick; }
 	int &GetNumObjectsHitKZ() { return m_NumObjectsHit; }
+
+	//+KZ for bot AI:
+	void HandleKZBot(CNetObj_PlayerInput &Input);
+	CBaseKZBotAI* m_pKZBotAI = nullptr;
 };
 
 #endif
