@@ -85,7 +85,7 @@ void CPickupPvP::Tick()
 			switch (m_Subtype)
 			{
 				case WEAPON_GRENADE:
-					if(!pChr->GetWeaponGot(WEAPON_GRENADE) || pChr->GetWeaponAmmo(WEAPON_GRENADE) == 0)
+					if(!pChr->GetWeaponGot(WEAPON_GRENADE) || pChr->GetWeaponAmmo(WEAPON_GRENADE) < 10)
 					{
 						pChr->GiveWeapon(WEAPON_GRENADE);
 						pChr->SetWeaponAmmo(WEAPON_GRENADE, 10);
@@ -96,7 +96,7 @@ void CPickupPvP::Tick()
 					}
 					break;
 				case WEAPON_SHOTGUN:
-					if(!pChr->GetWeaponGot(WEAPON_SHOTGUN) || pChr->GetWeaponAmmo(WEAPON_SHOTGUN) == 0)
+					if(!pChr->GetWeaponGot(WEAPON_SHOTGUN) || pChr->GetWeaponAmmo(WEAPON_SHOTGUN) < 10)
 					{
 						pChr->GiveWeapon(WEAPON_SHOTGUN);
 						pChr->SetWeaponAmmo(WEAPON_SHOTGUN, 10);
@@ -107,7 +107,7 @@ void CPickupPvP::Tick()
 					}
 					break;
 				case WEAPON_LASER:
-					if(!pChr->GetWeaponGot(WEAPON_LASER) || pChr->GetWeaponAmmo(WEAPON_LASER) == 0)
+					if(!pChr->GetWeaponGot(WEAPON_LASER) || pChr->GetWeaponAmmo(WEAPON_LASER) < 10)
 					{
 						pChr->GiveWeapon(WEAPON_LASER);
 						pChr->SetWeaponAmmo(WEAPON_LASER, 10);
