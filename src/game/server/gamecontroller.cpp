@@ -165,9 +165,26 @@ bool IGameController::CanSpawn(int Team, vec2 *pOutPos, int DDTeam)
 		return false;
 
 	CSpawnEval Eval;
-	EvaluateSpawnType(&Eval, 0, DDTeam);
+	/*EvaluateSpawnType(&Eval, 0, DDTeam);
 	EvaluateSpawnType(&Eval, 1, DDTeam);
-	EvaluateSpawnType(&Eval, 2, DDTeam);
+	EvaluateSpawnType(&Eval, 2, DDTeam);*/
+
+	//+KZ
+
+	if(IsTeamPlay())
+	{
+		if(Team == TEAM_RED)
+			EvaluateSpawnType(&Eval, 1, DDTeam);
+		else if(Team == TEAM_BLUE)
+			EvaluateSpawnType(&Eval, 2, DDTeam);
+		EvaluateSpawnType(&Eval, 0, DDTeam);
+	}
+	else
+	{
+		EvaluateSpawnType(&Eval, 0, DDTeam);
+		EvaluateSpawnType(&Eval, 1, DDTeam);
+		EvaluateSpawnType(&Eval, 2, DDTeam);
+	}
 
 	*pOutPos = Eval.m_Pos;
 	return Eval.m_Got;
