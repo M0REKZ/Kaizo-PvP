@@ -25,5 +25,6 @@ public:
 	void EndMatch(int Ticks);
 	virtual bool IsFriendlyFire(int ClientID1, int ClientID2) override;
 	int m_PausedTicks = 0;
+	int m_WinPauseTicks = 0;
 };
 #endif // GAME_SERVER_GAMEMODES_DDRACE_H

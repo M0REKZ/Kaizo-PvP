@@ -11,6 +11,7 @@ public:
 	~CGameControllerDM();
 
 	virtual int DoWinCheck() override;
+	virtual int OnCharacterDeath(class CCharacter *pVictim, class CPlayer *pKiller, int Weapon) override;
 
 };
 #endif // GAME_SERVER_GAMEMODES_DDRACE_H

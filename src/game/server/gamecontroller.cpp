@@ -720,7 +720,7 @@ int IGameController::ClampTeam(int Team)
 {
 	if(Team < 0)
 		return TEAM_SPECTATORS;
-	return 0;
+	return Team; //+KZ
 }
 
 CClientMask IGameController::GetMaskForPlayerWorldEvent(int Asker, int ExceptId)

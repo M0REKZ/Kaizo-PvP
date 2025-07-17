@@ -33,6 +33,7 @@
 #include "gamemodes/DDRace.h"
 #include "gamemodes/mod.h"
 #include "gamemodes/kz/dm.h"
+#include "gamemodes/kz/tdm.h"
 #include "player.h"
 #include "score.h"
 
@@ -4041,6 +4042,8 @@ void CGameContext::OnInit(const void *pPersistentData)
 
 	if(!str_comp(Config()->m_SvGametype, "dm"))
 		m_pController = new CGameControllerDM(this);
+	else if(!str_comp(Config()->m_SvGametype, "tdm"))
+		m_pController = new CGameControllerTDM(this);
 	else
 		m_pController = new CGameControllerDM(this);
 

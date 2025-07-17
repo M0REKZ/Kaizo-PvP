@@ -44,8 +44,15 @@ int CGameControllerDM::DoWinCheck()
 
 	if(m_SuddenDeath ? !Draw : HighScore >= g_Config.m_SvScoreLimit)
 	{
-		return 5 * Server()->TickSpeed();
+		m_WinPauseTicks = 5 * Server()->TickSpeed();
+		return 1;
 	}
 
 	return 0;
+}
+
+int CGameControllerDM::OnCharacterDeath(CCharacter *pVictim, CPlayer *pKiller, int Weapon)
+{
+	DoWinCheck();
+	return CGameControllerBasePvP::OnCharacterDeath(pVictim,pKiller,Weapon);
 }

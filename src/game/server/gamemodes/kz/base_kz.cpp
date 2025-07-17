@@ -82,6 +82,35 @@ void CGameControllerBaseKZ::OnPlayerConnect(CPlayer *pPlayer)
 		GameServer()->SendChatTarget(ClientId, "Kaizo-PvP Mod (ALPHA). DDNet Version: " GAME_VERSION);
 		GameServer()->SendChatTarget(ClientId, "please visit m0rekz.github.io or say /info and make sure to read our /rules");
 	}
+
+	//balance team
+	if(IsTeamPlay())
+	{
+		int Red = 0,Blue = 0;
+
+		for(auto pPl : GameServer()->m_apPlayers)
+		{
+			if(!pPl)
+				continue;
+
+			if(pPl == pPlayer)
+				continue;
+
+			if(pPl->GetTeam() == TEAM_RED)
+				Red++;
+			else if(pPl->GetTeam() == TEAM_BLUE)
+				Blue++;
+		}
+
+		if(Blue < Red)
+		{
+			pPlayer->SetTeam(TEAM_BLUE);
+		}
+		else
+		{
+			pPlayer->SetTeam(TEAM_RED);
+		}
+	}
 }
 
 void CGameControllerBaseKZ::OnPlayerDisconnect(CPlayer *pPlayer, const char *pReason)
@@ -123,6 +152,7 @@ void CGameControllerBaseKZ::Tick()
 			pPlayer->m_ScoreKZ = 0;
 			pPlayer->Respawn();
 		}
+		OnNewMatch();
 		return;
 	}
 
@@ -133,10 +163,11 @@ void CGameControllerBaseKZ::Tick()
 		if(g_Config.m_SvTimeLimit && (((g_Config.m_SvTimeLimit * Server()->TickSpeed() * 60) + m_RoundStartTick) <= Server()->Tick()))
 			m_SuddenDeath = 1;
 
-		int Ticks = DoWinCheck();
-
-		if(Ticks)
-			EndMatch(Ticks);
+		if(m_WinPauseTicks)
+		{
+			EndMatch(m_WinPauseTicks);
+			m_WinPauseTicks = 0;
+		}
 	}
 }
 

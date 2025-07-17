@@ -286,10 +286,12 @@ int CGameControllerBasePvP::OnCharacterDeath(CCharacter *pVictim, CPlayer *pKill
 	if(pPlayer == pKiller)
 	{
 		pKiller->m_ScoreKZ--;
+		return -1;
 	}
 	else
 	{
 		pKiller->m_ScoreKZ++;
+		return 1;
 	}
 
 	return 0;

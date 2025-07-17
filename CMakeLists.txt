@@ -2779,7 +2779,9 @@ if(SERVER)
     gamemodes/kz/base_pvp.cpp
     gamemodes/kz/base_pvp.h
     gamemodes/kz/dm.cpp
-    gamemodes/kz/dm
+    gamemodes/kz/dm.h
+    gamemodes/kz/tdm.cpp
+    gamemodes/kz/tdm.h
     gamemodes/mod.cpp
     gamemodes/mod.h
     gameworld.cpp
