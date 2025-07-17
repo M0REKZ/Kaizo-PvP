@@ -438,10 +438,10 @@ void IGameController::OnPlayerDisconnect(class CPlayer *pPlayer, const char *pRe
 			str_format(aBuf, sizeof(aBuf), "'%s' has left the game", Server()->ClientName(ClientId));
 		GameServer()->SendChat(-1, TEAM_ALL, aBuf, -1, CGameContext::FLAG_SIX);
 
+		GameServer()->SendDiscordChatMessage(-1,aBuf); //+KZ
+
 		str_format(aBuf, sizeof(aBuf), "leave player='%d:%s'", ClientId, Server()->ClientName(ClientId));
 		GameServer()->Console()->Print(IConsole::OUTPUT_LEVEL_STANDARD, "game", aBuf);
-
-		GameServer()->SendDiscordChatMessage(-1,aBuf); //+KZ
 	}
 }
 

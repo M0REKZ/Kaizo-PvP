@@ -28,6 +28,7 @@ int CGameControllerDM::DoWinCheck()
 
 	int HighScore = -1;
 	int BestPlayer = -1;
+	bool Draw = false;
 
 	for(auto pPlayer : GameServer()->m_apPlayers)
 	{
@@ -41,7 +42,7 @@ int CGameControllerDM::DoWinCheck()
 		}
 	}
 
-	if(HighScore >= g_Config.m_SvScoreLimit)
+	if(m_SuddenDeath ? !Draw : HighScore >= g_Config.m_SvScoreLimit)
 	{
 		return 5 * Server()->TickSpeed();
 	}

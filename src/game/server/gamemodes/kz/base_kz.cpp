@@ -96,6 +96,9 @@ void CGameControllerBaseKZ::OnReset()
 
 void CGameControllerBaseKZ::Tick()
 {
+	if(GameServer()->m_World.m_Paused)
+		m_RoundStartTick++;
+
 	if(m_PausedTicks > 0)
 	{
 		m_PausedTicks--;
@@ -105,7 +108,9 @@ void CGameControllerBaseKZ::Tick()
 	{
 		m_PausedTicks = -1;
 		GameServer()->m_World.m_Paused = false;
-		m_GameFlags ^= GAMESTATEFLAG_GAMEOVER;
+		m_GameOverTick = -1;
+		m_RoundStartTick = Server()->Tick();
+		m_SuddenDeath = 0;
 		for(auto pPlayer : GameServer()->m_apPlayers)
 		{
 			if(!pPlayer)
@@ -125,6 +130,9 @@ void CGameControllerBaseKZ::Tick()
 
 	if(!m_Warmup)
 	{
+		if(g_Config.m_SvTimeLimit && (((g_Config.m_SvTimeLimit * Server()->TickSpeed() * 60) + m_RoundStartTick) <= Server()->Tick()))
+			m_SuddenDeath = 1;
+
 		int Ticks = DoWinCheck();
 
 		if(Ticks)
@@ -164,7 +172,7 @@ void CGameControllerBaseKZ::EndMatch(int Ticks)
 {
 	GameServer()->m_World.m_Paused = true;
 	m_PausedTicks = Ticks;
-	m_GameFlags |= GAMESTATEFLAG_GAMEOVER;
+	m_GameOverTick = Server()->Tick();
 }
 
 bool CGameControllerBaseKZ::IsFriendlyFire(int ClientID1, int ClientID2)

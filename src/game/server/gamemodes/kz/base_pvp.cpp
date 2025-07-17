@@ -189,6 +189,9 @@ bool CGameControllerBasePvP::CharacterFireWeapon(CCharacter *pChar)
 			{
 				CCharacter *pTarget = apEnts[i];
 
+				if(!pTarget->CanCollide(pChar->GetPlayer()->GetCid()))
+					continue;
+
 				if((pTarget == pChar) || GameServer()->Collision()->IntersectLine(ProjStartPos, pTarget->m_Pos, NULL, NULL))
 					continue;
 
