@@ -24,6 +24,7 @@ CLaserKZ::CLaserKZ(CGameWorld *pGameWorld, vec2 Pos, vec2 Direction, float Start
 	m_IsBlueTeleport = IsBlueTeleport;
 	m_Bounces = Bounces;
 	m_CreateNewLaser = false;
+	m_SnapTick = Server()->Tick();
 
 	m_ZeroEnergyBounceInLastTick = false;
 	m_PrevTuneZone = m_TuneZone = GameServer()->Collision()->IsTune(GameServer()->Collision()->GetMapIndex(m_Pos));
@@ -262,6 +263,12 @@ void CLaserKZ::Tick()
 
 	if((Server()->Tick() - m_EvalTick) > (Server()->TickSpeed() * Delay / 1000.0f))
 	{
+		m_SnapTick = Server()->Tick();
+		if(m_CreateNewLaser && m_Energy != -1)
+		{
+			CreateNewLaser();
+			m_CreateNewLaser = false;
+		}
 		if(m_ResetNextTick)
 		{
 			Reset();
@@ -271,11 +278,6 @@ void CLaserKZ::Tick()
 		DoBounce();
 	}
 	
-	if(m_CreateNewLaser && m_Energy != -1)
-	{
-		CreateNewLaser();
-		m_CreateNewLaser = false;
-	}
 }
 
 void CLaserKZ::TickPaused()
@@ -309,7 +311,7 @@ void CLaserKZ::Snap(int SnappingClient)
 	int LaserType = m_Type == WEAPON_LASER ? LASERTYPE_RIFLE : m_Type == WEAPON_SHOTGUN ? LASERTYPE_SHOTGUN : -1;
 
 	GameServer()->SnapLaserObject(CSnapContext(SnappingClientVersion), GetId(),
-		m_Pos, m_PrevPos, m_EvalTick, m_Owner, LaserType, 0, m_Number);
+		m_Pos, m_PrevPos, m_SnapTick, m_Owner, LaserType, 0, m_Number);
 }
 
 void CLaserKZ::SwapClients(int Client1, int Client2)

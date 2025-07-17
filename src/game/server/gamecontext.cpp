@@ -1009,6 +1009,10 @@ void CGameContext::SendTuningParams(int ClientId, int Zone)
 				Msg.AddInt(pParams[i]);
 			}
 		}
+		else if(i == 27) //+KZ laser bounce delay prediction fix
+		{
+			Msg.AddInt(150);
+		}
 		else
 			Msg.AddInt(pParams[i]); // if everything is normal just send true tunings
 	}
@@ -4475,8 +4479,15 @@ void CGameContext::OnSnap(int ClientId)
 	{
 		CMsgPacker Msg(NETMSGTYPE_SV_TUNEPARAMS);
 		int *pParams = (int *)&m_Tuning;
-		for(unsigned i = 0; i < sizeof(m_Tuning) / sizeof(int); i++)
+		for(unsigned i = 0; i < sizeof(m_Tuning) / sizeof(int); i++) //+KZ modified for laser prediction fix
+		{
+			if(i == 27)
+			{
+				Msg.AddInt(150);
+				continue;
+			}
 			Msg.AddInt(pParams[i]);
+		}
 		Server()->SendMsg(&Msg, MSGFLAG_RECORD | MSGFLAG_NOSEND, ClientId);
 	}
 

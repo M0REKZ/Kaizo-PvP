@@ -31,6 +31,7 @@ protected:
 	bool m_ResetNextTick = false;
 
 	int m_EvalTick;
+	int m_SnapTick;
 	int m_Owner;
 	CClientMask m_TeamMask;
 	bool m_ZeroEnergyBounceInLastTick;
