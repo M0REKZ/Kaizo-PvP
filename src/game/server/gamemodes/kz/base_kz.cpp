@@ -77,9 +77,10 @@ void CGameControllerBaseKZ::OnPlayerConnect(CPlayer *pPlayer)
 		char aBuf[512];
 		str_format(aBuf, sizeof(aBuf), "'%s' entered and joined the %s", Server()->ClientName(ClientId), GetTeamName(pPlayer->GetTeam()));
 		GameServer()->SendChat(-1, TEAM_ALL, aBuf, -1, CGameContext::FLAG_SIX);
+		GameServer()->SendDiscordChatMessage(-1,aBuf); //+KZ
 
-		GameServer()->SendChatTarget(ClientId, "Kaizo-PvP Mod. DDNet Version: " GAME_VERSION);
-		GameServer()->SendChatTarget(ClientId, "please visit DDNet.org or say /info and make sure to read our /rules");
+		GameServer()->SendChatTarget(ClientId, "Kaizo-PvP Mod (ALPHA). DDNet Version: " GAME_VERSION);
+		GameServer()->SendChatTarget(ClientId, "please visit m0rekz.github.io or say /info and make sure to read our /rules");
 	}
 }
 
@@ -104,6 +105,7 @@ void CGameControllerBaseKZ::Tick()
 	{
 		m_PausedTicks = -1;
 		GameServer()->m_World.m_Paused = false;
+		m_GameFlags ^= GAMESTATEFLAG_GAMEOVER;
 		for(auto pPlayer : GameServer()->m_apPlayers)
 		{
 			if(!pPlayer)
@@ -162,6 +164,7 @@ void CGameControllerBaseKZ::EndMatch(int Ticks)
 {
 	GameServer()->m_World.m_Paused = true;
 	m_PausedTicks = Ticks;
+	m_GameFlags |= GAMESTATEFLAG_GAMEOVER;
 }
 
 bool CGameControllerBaseKZ::IsFriendlyFire(int ClientID1, int ClientID2)

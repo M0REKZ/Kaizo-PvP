@@ -779,3 +779,4 @@ MACRO_CONFIG_INT(SvScoreLimit, sv_score_limit, 20, 0, 2147483647, CFGFLAG_SERVER
 MACRO_CONFIG_INT(SvTimeLimit, sv_time_limit, 0, 0, 2147483647, CFGFLAG_SERVER, "Time Limit")
 MACRO_CONFIG_INT(SvTeamdamage, sv_team_damage, 0, 0, 1, CFGFLAG_SERVER, "Team Damage")
 MACRO_CONFIG_INT(SvPickupParticles, sv_pickup_particles, 1, 0, 1, CFGFLAG_SERVER, "Whether or not to enable particles when a pickup is yet to respawn")
+MACRO_CONFIG_STR(SvChatDiscordWebhook, sv_chat_discord_webhook, 512, "", CFGFLAG_SERVER, "Where to send chat messages written by players")
