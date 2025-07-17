@@ -177,7 +177,6 @@ bool IGameController::CanSpawn(int Team, vec2 *pOutPos, int DDTeam)
 			EvaluateSpawnType(&Eval, 1, DDTeam);
 		else if(Team == TEAM_BLUE)
 			EvaluateSpawnType(&Eval, 2, DDTeam);
-		EvaluateSpawnType(&Eval, 0, DDTeam);
 	}
 	else
 	{
