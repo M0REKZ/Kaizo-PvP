@@ -634,6 +634,10 @@ public:
 
 	IHttp *m_pHttp; //+KZ
 	void SendDiscordChatMessage(int ClientID, const char* msg); // +KZ
+
+	void SendGameMsg(int GameMsgId, int ClientId) const;
+	void SendGameMsg(int GameMsgId, int ParaI1, int ClientId) const;
+	void SendGameMsg(int GameMsgId, int ParaI1, int ParaI2, int ParaI3, int ClientId) const;
 };
 
 static inline bool CheckClientId(int ClientId)

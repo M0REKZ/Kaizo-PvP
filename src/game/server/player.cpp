@@ -179,7 +179,7 @@ void CPlayer::Tick()
 	if(m_ChatScore > 0)
 		m_ChatScore--;
 
-	Server()->SetClientScore(m_ClientId, m_Score);
+	Server()->SetClientScore(m_ClientId, m_ScoreKZ); //+KZ modified
 
 	if(m_Moderating && m_Afk)
 	{

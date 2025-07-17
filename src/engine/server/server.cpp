@@ -2402,7 +2402,7 @@ void CServer::CacheServerInfoSixup(CCache *pCache, bool SendClients, int MaxCons
 	Packer.AddString(GameServer()->GameType(), 16);
 
 	// flags
-	int Flags = SERVER_FLAG_TIMESCORE;
+	int Flags = 0; //+KZ modified
 	if(Config()->m_Password[0]) // password set
 		Flags |= SERVER_FLAG_PASSWORD;
 	Packer.AddInt(Flags);
@@ -2592,7 +2592,7 @@ void CServer::UpdateRegisterServerInfo()
 	JsonWriter.WriteStrValue(GameServer()->Version());
 
 	JsonWriter.WriteAttribute("client_score_kind");
-	JsonWriter.WriteStrValue("time"); // "points" or "time"
+	JsonWriter.WriteStrValue("points"); // "points" or "time"
 
 	JsonWriter.WriteAttribute("requires_login");
 	JsonWriter.WriteBoolValue(false);

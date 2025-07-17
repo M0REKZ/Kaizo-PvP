@@ -2742,6 +2742,8 @@ if(SERVER)
     entities/dragger_beam.h
     entities/gun.cpp
     entities/gun.h
+    entities/kz/flag.cpp
+    entities/kz/flag.h
     entities/kz/particle_kz.cpp
     entities/kz/particle_kz.h
     entities/kz/pickup_pvp.cpp
@@ -2780,6 +2782,8 @@ if(SERVER)
     gamemodes/kz/base_pvp.h
     gamemodes/kz/dm.cpp
     gamemodes/kz/dm.h
+    gamemodes/kz/ctf.cpp
+    gamemodes/kz/ctf.h
     gamemodes/kz/tdm.cpp
     gamemodes/kz/tdm.h
     gamemodes/mod.cpp

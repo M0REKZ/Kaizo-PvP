@@ -34,6 +34,7 @@
 #include "gamemodes/mod.h"
 #include "gamemodes/kz/dm.h"
 #include "gamemodes/kz/tdm.h"
+#include "gamemodes/kz/ctf.h"
 #include "player.h"
 #include "score.h"
 
@@ -4044,6 +4045,8 @@ void CGameContext::OnInit(const void *pPersistentData)
 		m_pController = new CGameControllerDM(this);
 	else if(!str_comp(Config()->m_SvGametype, "tdm"))
 		m_pController = new CGameControllerTDM(this);
+	else if(!str_comp(Config()->m_SvGametype, "ctf"))
+		m_pController = new CGameControllerCTF(this);
 	else
 		m_pController = new CGameControllerDM(this);
 
@@ -5218,4 +5221,92 @@ void CGameContext::SendDiscordChatMessage(int ClientID, const char* msg)
 	pDiscord->Timeout(CTimeout{4000, 15000, 500, 5});
 	pDiscord->HeaderString("Content-Type", "application/json");
 	m_pHttp->Run(pDiscord);
+}
+
+void CGameContext::SendGameMsg(int GameMsgId, int ClientId) const
+{
+	dbg_assert(
+		GameMsgId == protocol7::GAMEMSG_TEAM_SWAP ||
+			GameMsgId == protocol7::GAMEMSG_SPEC_INVALIDID ||
+			GameMsgId == protocol7::GAMEMSG_TEAM_SHUFFLE ||
+			GameMsgId == protocol7::GAMEMSG_TEAM_BALANCE ||
+			GameMsgId == protocol7::GAMEMSG_CTF_DROP ||
+			GameMsgId == protocol7::GAMEMSG_CTF_RETURN,
+		"the passed game message id does not take 0 arguments");
+
+	CMsgPacker Msg(protocol7::NETMSGTYPE_SV_GAMEMSG, false, true);
+	Msg.AddInt(GameMsgId);
+	if(ClientId != -1 && Server()->IsSixup(ClientId))
+	{
+		Server()->SendMsg(&Msg, MSGFLAG_VITAL, ClientId);
+		return;
+	}
+	for(int i = 0; i < Server()->MaxClients(); i++)
+	{
+		if(Server()->IsSixup(i))
+		{
+			Server()->SendMsg(&Msg, MSGFLAG_VITAL, i);
+			continue;
+		}
+		// TODO: 0.6
+	}
+}
+
+void CGameContext::SendGameMsg(int GameMsgId, int ParaI1, int ClientId) const
+{
+	dbg_assert(
+		GameMsgId == protocol7::GAMEMSG_TEAM_ALL ||
+			GameMsgId == protocol7::GAMEMSG_TEAM_BALANCE_VICTIM ||
+			GameMsgId == protocol7::GAMEMSG_CTF_GRAB ||
+			GameMsgId == protocol7::GAMEMSG_GAME_PAUSED,
+		"the passed game message id does not take 1 argument");
+
+	CMsgPacker Msg(protocol7::NETMSGTYPE_SV_GAMEMSG, false, true);
+	Msg.AddInt(GameMsgId);
+	Msg.AddInt(ParaI1);
+	if(ClientId != -1 && Server()->IsSixup(ClientId))
+	{
+		Server()->SendMsg(&Msg, MSGFLAG_VITAL, ClientId);
+		return;
+	}
+	for(int i = 0; i < Server()->MaxClients(); i++)
+	{
+		if(!m_apPlayers[i])
+			continue;
+
+		if(Server()->IsSixup(i))
+		{
+			Server()->SendMsg(&Msg, MSGFLAG_VITAL, i);
+			continue;
+		}
+		if(GameMsgId == protocol7::GAMEMSG_GAME_PAUSED)
+		{
+			char aBuf[512];
+			int PauseId = std::clamp(ParaI1, 0, Server()->MaxClients() - 1);
+			str_format(aBuf, sizeof(aBuf), "'%s' initiated a pause. If you are ready do /ready", Server()->ClientName(PauseId));
+			SendChatTarget(i, aBuf);
+		}
+	}
+}
+
+void CGameContext::SendGameMsg(int GameMsgId, int ParaI1, int ParaI2, int ParaI3, int ClientId) const
+{
+	dbg_assert(GameMsgId == protocol7::GAMEMSG_CTF_CAPTURE, "the passed game message id does not take 3 arguments");
+
+	CMsgPacker Msg(protocol7::NETMSGTYPE_SV_GAMEMSG, false, true);
+	Msg.AddInt(GameMsgId);
+	Msg.AddInt(ParaI1);
+	Msg.AddInt(ParaI2);
+	Msg.AddInt(ParaI3);
+	if(ClientId != -1)
+		Server()->SendMsg(&Msg, MSGFLAG_VITAL, ClientId);
+	for(int i = 0; i < Server()->MaxClients(); i++)
+	{
+		if(Server()->IsSixup(i))
+		{
+			Server()->SendMsg(&Msg, MSGFLAG_VITAL, i);
+			continue;
+		}
+		// TODO: 0.6
+	}
 }
