@@ -2,6 +2,7 @@
 #include <game/server/gamecontext.h>
 #include <game/server/player.h>
 #include <game/server/gamecontroller.h>
+#include <game/server/entities/kz/flag.h>
 
 CPointerBotAI::CPointerBotAI(CCharacter * pChr) : CBaseKZBotAI(pChr)
 {
@@ -10,6 +11,25 @@ CPointerBotAI::CPointerBotAI(CCharacter * pChr) : CBaseKZBotAI(pChr)
 
 void CPointerBotAI::HandleInput(CNetObj_PlayerInput &Input)
 {
+	CFlag *pEnemyFlag = nullptr; //+KZ
+	CFlag *pTeamFlag = nullptr; //+KZ
+
+	//+KZ
+	{ 
+		CFlag *p = (CFlag *)GameServer()->m_World.FindFirst(CGameWorld::ENTTYPE_FLAG);
+		for(; p; p = (CFlag *)p->TypeNext())
+		{
+			
+			if(p->GetTeam() == m_pPlayer->GetTeam())
+			{
+				pTeamFlag = p;
+				continue;
+			}
+			
+			pEnemyFlag = p;
+		}
+	}
+
 	Input.m_Direction = 0;
 	Input.m_TargetX = (rand() % 128) - 64; // look randomly
 	Input.m_TargetY = (rand() % 128) - 64;
@@ -35,8 +55,30 @@ void CPointerBotAI::HandleInput(CNetObj_PlayerInput &Input)
 	Input.m_Direction = m_botDirectionPointer;
 	if (rand() % (Server()->TickSpeed()*2) == 1)
 		Input.m_Jump = true;
-	
-	
+
+	if(str_find_nocase(GameServer()->m_pController->m_pGameType, "ctf"))
+	{
+		int team = m_pPlayer->GetTeam();
+		int teamEnemy = 1 - team;
+		if(pTeamFlag && pEnemyFlag)
+		{
+			if(pEnemyFlag->m_pCarrier == GetCharacter())
+			{
+				if(pTeamFlag->m_Pos.x > GetCharacter()->m_Pos.x)
+					m_botDirectionPointer = 1;
+				else
+					m_botDirectionPointer = -1;
+			}
+			else
+			{
+				if(pEnemyFlag->m_Pos.x > GetCharacter()->m_Pos.x)
+					m_botDirectionPointer = 1;
+				else
+					m_botDirectionPointer = -1;
+			}
+		}
+	}
+
 	if (GameServer()->Server()->Tick() % (Server()->TickSpeed()) == 1)
 	{
 		// get a new aggro
