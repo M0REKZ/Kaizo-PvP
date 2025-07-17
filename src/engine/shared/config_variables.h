@@ -783,3 +783,6 @@ MACRO_CONFIG_STR(SvChatDiscordWebhook, sv_chat_discord_webhook, 512, "", CFGFLAG
 
 MACRO_CONFIG_INT(SvKZBots, sv_kzbots, 0, 0, MAX_CLIENTS, CFGFLAG_SERVER, "Add KZ Bots")
 MACRO_CONFIG_INT(SvKZBotsAI, sv_kzbots_ai, 0, 0, 99, CFGFLAG_SERVER, "KZ Bots AI (0 = +KZ AI, 1 = Pointer AI)")
+
+MACRO_CONFIG_STR(SvInstagibWeapon, sv_instagib_weapon, 256, "", CFGFLAG_SERVER, "Instagib weapon")
+MACRO_CONFIG_INT(SvInstagibMinDamage, sv_instagib_min_damage, 5, 0, 999, CFGFLAG_SERVER, "Minimal damage to kill on instagib")

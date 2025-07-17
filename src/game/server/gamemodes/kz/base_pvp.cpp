@@ -32,6 +32,11 @@ CGameControllerBasePvP::CGameControllerBasePvP(class CGameContext *pGameServer) 
 		GameServer()->Tuning()->Set("shotgun_speeddiff", 0.8f);
 		GameServer()->Tuning()->Set("shotgun_curvature", 1.25f);
 	}
+
+	if(g_Config.m_SvInstagibWeapon[0] == 'l' || g_Config.m_SvInstagibWeapon[0] == 'L')
+		m_InstagibWeapon = WEAPON_LASER;
+	else if(g_Config.m_SvInstagibWeapon[0] == 'g' || g_Config.m_SvInstagibWeapon[0] == 'G')
+		m_InstagibWeapon = WEAPON_GRENADE;
 }
 
 CGameControllerBasePvP::~CGameControllerBasePvP() = default;
@@ -45,6 +50,19 @@ bool CGameControllerBasePvP::OnCharacterTakeDamage(CCharacter *pChar, vec2 Force
 
 	if(GameServer()->m_pController->IsFriendlyFire(pChar->GetPlayer()->GetCid(), From) && !g_Config.m_SvTeamdamage)
 		return false;
+
+	if(m_InstagibWeapon != -1)
+	{
+		if(pChar->GetPlayer()->GetCid() == From)
+			return false;
+
+		if(Dmg < g_Config.m_SvInstagibMinDamage)
+			return false;
+		
+		pChar->Die(From, Weapon);
+
+		return true;
+	}
 
 	// m_pPlayer only inflicts half damage on self
 	if(From == pChar->GetPlayer()->GetCid())
@@ -341,4 +359,21 @@ bool CGameControllerBasePvP::OnEntity(int Index, int x, int y, int Layer, int Fl
 	}
 
 	return false;
+}
+
+void CGameControllerBasePvP::OnCharacterSpawn(CCharacter *pChr)
+{
+	CGameControllerBaseKZ::OnCharacterSpawn(pChr);
+
+	if(!pChr)
+		return;
+
+	if(m_InstagibWeapon == -1)
+		return;
+
+	pChr->GiveWeapon(WEAPON_HAMMER,true);
+	pChr->GiveWeapon(WEAPON_GUN,true);
+
+	pChr->GiveWeapon(m_InstagibWeapon);
+
 }

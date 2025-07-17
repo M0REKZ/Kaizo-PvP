@@ -17,7 +17,36 @@
 CGameControllerTDM::CGameControllerTDM(class CGameContext *pGameServer) :
 	CGameControllerBasePvP(pGameServer)
 {
-	m_pGameType = g_Config.m_SvTestingCommands ? TEST_TYPE_NAME : GAME_TYPE_NAME;
+	if(m_InstagibWeapon != -1)
+	{
+		if(g_Config.m_SvTestingCommands)
+		{
+			if(m_InstagibWeapon == WEAPON_GRENADE)
+			{
+				m_pGameType = "g" TEST_TYPE_NAME;
+			}
+			else if(m_InstagibWeapon == WEAPON_LASER)
+			{
+				m_pGameType = "i" TEST_TYPE_NAME;
+			}
+		}
+		else
+		{
+			if(m_InstagibWeapon == WEAPON_GRENADE)
+			{
+				m_pGameType = "g" GAME_TYPE_NAME;
+			}
+			else if(m_InstagibWeapon == WEAPON_LASER)
+			{
+				m_pGameType = "i" GAME_TYPE_NAME;
+			}
+		}
+	}
+	else
+	{
+		m_pGameType = g_Config.m_SvTestingCommands ? TEST_TYPE_NAME : GAME_TYPE_NAME;
+	}
+	
 	m_GameFlags = GAMEFLAG_TEAMS;
 
 	m_aTeamScore[TEAM_RED] = 0;
