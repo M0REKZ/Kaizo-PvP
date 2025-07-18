@@ -71,7 +71,7 @@ int CGameControllerCTF::DoWinCheck()
 		{
 			if(m_aTeamScore[TEAM_RED] / 100 != m_aTeamScore[TEAM_BLUE] / 100)
 			{
-				m_WinPauseTicks = 5 * Server()->TickSpeed();
+				m_WinPauseTicks = 10 * Server()->TickSpeed();
 				return 1;
 			}
 		}
@@ -79,7 +79,7 @@ int CGameControllerCTF::DoWinCheck()
 		{
 			if(m_aTeamScore[TEAM_RED] != m_aTeamScore[TEAM_BLUE])
 			{
-				m_WinPauseTicks = 5 * Server()->TickSpeed();
+				m_WinPauseTicks = 10 * Server()->TickSpeed();
 				return 1;
 			}
 			else
@@ -334,6 +334,14 @@ void CGameControllerCTF::Snap(int SnappingClient)
 
 		pGameDataObj->m_FlagCarrierRed = FlagCarrierRed;
 		pGameDataObj->m_FlagCarrierBlue = FlagCarrierBlue;
+
+		protocol7::CNetObj_GameDataTeam *pGameDataObj2 = Server()->SnapNewItem<protocol7::CNetObj_GameDataTeam>(0);
+
+		if(!pGameDataObj2)
+			return;
+
+		pGameDataObj2->m_TeamscoreRed = m_aTeamScore[TEAM_RED];
+		pGameDataObj2->m_TeamscoreBlue = m_aTeamScore[TEAM_BLUE];
 	}
 	else
 	{

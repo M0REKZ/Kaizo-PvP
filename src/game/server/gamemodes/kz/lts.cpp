@@ -1,6 +1,6 @@
 /* (c) Shereef Marzouk. See "licence DDRace.txt" and the readme.txt in the root of the distribution for more information. */
 /* Based on Race mod stuff and tweaked by GreYFoX@GTi and others to fit our DDRace needs. */
-#include "tdm.h"
+#include "lts.h"
 
 #include <engine/server.h>
 #include <engine/shared/config.h>
@@ -11,11 +11,11 @@
 #include <game/server/score.h>
 #include <game/version.h>
 
-#define GAME_TYPE_NAME "TDM-rw"
-#define TEST_TYPE_NAME "TestTDM"
+#define GAME_TYPE_NAME "LTS-rw"
+#define TEST_TYPE_NAME "TestLTS"
 
-CGameControllerTDM::CGameControllerTDM(class CGameContext *pGameServer) :
-	CGameControllerBasePvP(pGameServer)
+CGameControllerLTS::CGameControllerLTS(class CGameContext *pGameServer) :
+	CGameControllerLMS(pGameServer)
 {
 	if(m_InstagibWeapon != -1)
 	{
@@ -47,17 +47,82 @@ CGameControllerTDM::CGameControllerTDM(class CGameContext *pGameServer) :
 		m_pGameType = g_Config.m_SvTestingCommands ? TEST_TYPE_NAME : GAME_TYPE_NAME;
 	}
 
-	m_GameFlags = GAMEFLAG_TEAMS;
+	m_GameFlags = GAMEFLAG_TEAMS | protocol7::GAMEFLAG_SURVIVAL;
 
 	m_aTeamScore[TEAM_RED] = 0;
 	m_aTeamScore[TEAM_BLUE] = 0;
 }
 
-CGameControllerTDM::~CGameControllerTDM() = default;
+CGameControllerLTS::~CGameControllerLTS() = default;
 
-int CGameControllerTDM::DoWinCheck()
+int CGameControllerLTS::DoWinCheck()
 {
-	// check score win condition
+	//LTS round end
+	int Count[2] = {0};
+	for(int i = 0; i < MAX_CLIENTS; ++i)
+	{
+		if(GameServer()->m_apPlayers[i] && GameServer()->m_apPlayers[i]->GetTeam() != TEAM_SPECTATORS &&
+			!GameServer()->m_apPlayers[i]->m_IsDead)
+			++Count[GameServer()->m_apPlayers[i]->GetTeam()];
+	}
+
+	if(Count[TEAM_RED]+Count[TEAM_BLUE] == 0 || (g_Config.m_SvTimeLimit > 0 && (Server()->Tick()-m_RoundStartTick) >= g_Config.m_SvTimeLimit*Server()->TickSpeed()*60))
+	{
+		++m_aTeamScore[TEAM_BLUE];
+		++m_aTeamScore[TEAM_RED];
+		m_WinPauseTicks = 5 * Server()->TickSpeed();
+		m_IsRoundEnd = true;
+		return 1;
+	}
+	else if(Count[TEAM_RED] == 0)
+	{
+		++m_aTeamScore[TEAM_BLUE];
+		m_WinPauseTicks = 5 * Server()->TickSpeed();
+		m_IsRoundEnd = true;
+		return 1;
+	}
+	else if(Count[TEAM_BLUE] == 0)
+	{
+		++m_aTeamScore[TEAM_RED];
+		m_WinPauseTicks = 5 * Server()->TickSpeed();
+		m_IsRoundEnd = true;
+		return 1;
+	}
+	return 0;
+}
+
+void CGameControllerLTS::OnNewMatch()
+{
+	if(!m_StartingMatch && DoWinCheckMatch())
+		return;
+	CGameControllerDM::OnNewMatch();
+
+	for(auto pPlayer : GameServer()->m_apPlayers)
+	{
+		if(!pPlayer)
+			continue;
+
+		pPlayer->m_IsDead = false; //+KZ
+	}
+
+	if(!m_IsRoundEnd)
+	{
+		m_aTeamScore[TEAM_RED] = 0;
+		m_aTeamScore[TEAM_BLUE] = 0;
+	}
+}
+
+bool CGameControllerLTS::CanJoinTeam(int Team, int NotThisId, char *pErrorReason, int ErrorReasonSize)
+{
+	if(Team == TEAM_RED || Team == TEAM_BLUE)
+		return true;
+
+	return CGameControllerLMS::CanJoinTeam(Team,NotThisId,pErrorReason,ErrorReasonSize);
+}
+
+bool CGameControllerLTS::DoWinCheckMatch()
+{
+	//TeamPlay match end
 	if((g_Config.m_SvScoreLimit > 0 && (m_aTeamScore[TEAM_RED] >= g_Config.m_SvScoreLimit || m_aTeamScore[TEAM_BLUE] >= g_Config.m_SvScoreLimit)) ||
 		(g_Config.m_SvTimeLimit > 0 && (Server()->Tick() - m_RoundStartTick) >= g_Config.m_SvTimeLimit * Server()->TickSpeed() * 60))
 	{
@@ -66,7 +131,7 @@ int CGameControllerTDM::DoWinCheck()
 			if(m_aTeamScore[TEAM_RED] / 100 != m_aTeamScore[TEAM_BLUE] / 100)
 			{
 				m_WinPauseTicks = 10 * Server()->TickSpeed();
-				return 1;
+				return true;
 			}
 		}
 		else
@@ -74,49 +139,18 @@ int CGameControllerTDM::DoWinCheck()
 			if(m_aTeamScore[TEAM_RED] != m_aTeamScore[TEAM_BLUE])
 			{
 				m_WinPauseTicks = 10 * Server()->TickSpeed();
-				return 1;
+				return true;
 			}
 			else
 				m_SuddenDeath = 1;
 		}
 	}
-	return 0;
+	return false;
 }
 
-void CGameControllerTDM::OnNewMatch()
+void CGameControllerLTS::Snap(int SnappingClient)
 {
-	m_aTeamScore[TEAM_RED] = 0;
-	m_aTeamScore[TEAM_BLUE] = 0;
-}
-
-int CGameControllerTDM::OnCharacterDeath(CCharacter *pVictim, CPlayer *pKiller, int Weapon)
-{
-	int S = CGameControllerBasePvP::OnCharacterDeath(pVictim,pKiller,Weapon);
-
-	if(!S || !pKiller)
-		return 0;
-	
-	int Team = pKiller->GetTeam();
-
-	if(Team == TEAM_RED)
-		m_aTeamScore[TEAM_RED] += S > 0 ? 1 : -1;
-	else if(Team == TEAM_BLUE)
-		m_aTeamScore[TEAM_BLUE] += S > 0 ? 1 : -1;
-	
-	DoWinCheck();
-}
-
-bool CGameControllerTDM::CanJoinTeam(int Team, int NotThisId, char *pErrorReason, int ErrorReasonSize)
-{
-	if(Team == TEAM_RED || Team == TEAM_BLUE)
-		return true;
-
-	return CGameControllerBasePvP::CanJoinTeam(Team,NotThisId,pErrorReason,ErrorReasonSize);
-}
-
-void CGameControllerTDM::Snap(int SnappingClient)
-{
-	CGameControllerBasePvP::Snap(SnappingClient);
+	CGameControllerLMS::Snap(SnappingClient);
 
 	if(Server()->IsSixup(SnappingClient))
 	{

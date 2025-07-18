@@ -29,7 +29,7 @@ IGameController::IGameController(class CGameContext *pGameServer) :
 	m_pGameType = "unknown";
 
 	//
-	DoWarmup(g_Config.m_SvWarmup);
+	//DoWarmup(g_Config.m_SvWarmup); // +KZ commented out
 	m_GameOverTick = -1;
 	m_SuddenDeath = 0;
 	m_RoundStartTick = Server()->Tick();
@@ -177,6 +177,9 @@ bool IGameController::CanSpawn(int Team, vec2 *pOutPos, int DDTeam)
 			EvaluateSpawnType(&Eval, 1, DDTeam);
 		else if(Team == TEAM_BLUE)
 			EvaluateSpawnType(&Eval, 2, DDTeam);
+		
+		if(!Eval.m_Got)
+			EvaluateSpawnType(&Eval, 0, DDTeam); //fallback to normal spawn if there is no team spawn available
 	}
 	else
 	{
@@ -595,7 +598,7 @@ void IGameController::Snap(int SnappingClient)
 	if(GameServer()->m_World.m_Paused)
 		pGameInfoObj->m_GameStateFlags |= GAMESTATEFLAG_PAUSED;
 	pGameInfoObj->m_RoundStartTick = m_RoundStartTick;
-	pGameInfoObj->m_WarmupTimer = m_Warmup;
+	pGameInfoObj->m_WarmupTimer = m_WaitingForPlayers ? 0 : m_Warmup;
 
 	pGameInfoObj->m_RoundNum = 0;
 	pGameInfoObj->m_RoundCurrent = m_RoundCount + 1;
@@ -672,8 +675,12 @@ void IGameController::Snap(int SnappingClient)
 			pGameData->m_GameStateFlags |= protocol7::GAMESTATEFLAG_SUDDENDEATH;
 		if(GameServer()->m_World.m_Paused)
 			pGameData->m_GameStateFlags |= protocol7::GAMESTATEFLAG_PAUSED;
+		if(m_StartingMatch) // +KZ
+			pGameData->m_GameStateFlags |= protocol7::GAMESTATEFLAG_STARTCOUNTDOWN;
+		if(m_Warmup && !m_StartingMatch) // +KZ
+			pGameData->m_GameStateFlags |= protocol7::GAMESTATEFLAG_WARMUP;
 
-		pGameData->m_GameStateEndTick = 0;
+		pGameData->m_GameStateEndTick = (m_Warmup || m_StartingMatch) ? (m_RoundStartTick + g_Config.m_SvWarmup * Server()->TickSpeed()) : 0;
 
 		protocol7::CNetObj_GameDataRace *pRaceData = Server()->SnapNewItem<protocol7::CNetObj_GameDataRace>(0);
 		if(!pRaceData)
@@ -784,4 +791,20 @@ int IGameController::TileFlagsToPickupFlags(int TileFlags) const
 	if(TileFlags & TILEFLAG_ROTATE)
 		PickupFlags |= PICKUPFLAG_ROTATE;
 	return PickupFlags;
+}
+
+bool IGameController::HasEnoughPlayers() const
+{
+	int Red = 0;
+	int Blue = 0;
+
+	for(auto &pPlayer : GameServer()->m_apPlayers)
+	{
+		if(pPlayer && pPlayer->GetTeam() == TEAM_RED)
+			Red++;
+		else if(pPlayer && pPlayer->GetTeam() == TEAM_BLUE)
+			Blue++;
+	}
+
+	return (IsTeamPlay() && Red > 0 && Blue > 0) || (!IsTeamPlay() && Red > 1);
 }

@@ -35,6 +35,8 @@
 #include "gamemodes/kz/dm.h"
 #include "gamemodes/kz/tdm.h"
 #include "gamemodes/kz/ctf.h"
+#include "gamemodes/kz/lms.h"
+#include "gamemodes/kz/lts.h"
 #include "player.h"
 #include "score.h"
 
@@ -4052,6 +4054,10 @@ void CGameContext::OnInit(const void *pPersistentData)
 		m_pController = new CGameControllerTDM(this);
 	else if(!str_comp(Config()->m_SvGametype, "ctf"))
 		m_pController = new CGameControllerCTF(this);
+	else if(!str_comp(Config()->m_SvGametype, "lms"))
+		m_pController = new CGameControllerLMS(this);
+	else if(!str_comp(Config()->m_SvGametype, "lts"))
+		m_pController = new CGameControllerLTS(this);
 	else
 		m_pController = new CGameControllerDM(this);
 

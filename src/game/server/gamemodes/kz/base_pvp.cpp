@@ -376,6 +376,8 @@ void CGameControllerBasePvP::OnCharacterSpawn(CCharacter *pChr)
 	if(!pChr)
 		return;
 
+	pChr->SetWeaponAmmo(WEAPON_GUN, 10);
+
 	if(m_InstagibWeapon == -1)
 		return;
 

@@ -128,6 +128,27 @@ void CGameControllerBaseKZ::Tick()
 	if(GameServer()->m_World.m_Paused)
 		m_RoundStartTick++;
 
+	if(!HasEnoughPlayers())
+	{
+		if(!(Server()->Tick() % Server()->TickSpeed()))
+		{
+			GameServer()->SendBroadcast("Waiting for players...", -1);
+		}
+		m_WaitingForPlayers = true;
+	}
+	else if(m_WaitingForPlayers)
+	{
+		GameServer()->SendBroadcast("Match starting...", -1);
+		m_WaitingForPlayers = false;
+		m_StartingMatch = true;
+		m_Warmup = g_Config.m_SvWarmup * Server()->TickSpeed();
+		m_IsRoundEnd = false;
+		m_GameOverTick = -1;
+		m_RoundStartTick = Server()->Tick();
+		m_SuddenDeath = 0;
+		OnNewMatch();
+	}
+
 	if(m_PausedTicks > 0)
 	{
 		m_PausedTicks--;
@@ -140,19 +161,27 @@ void CGameControllerBaseKZ::Tick()
 		m_GameOverTick = -1;
 		m_RoundStartTick = Server()->Tick();
 		m_SuddenDeath = 0;
+		if(!m_IsRoundEnd)
+			m_StartingMatch = true;
+		else
+			m_StartingRound = true;
 		for(auto pPlayer : GameServer()->m_apPlayers)
 		{
 			if(!pPlayer)
 				continue;
 
+			pPlayer->m_IsDead = false;
+
 			if(CCharacter *pChar = pPlayer->GetCharacter())
 			{
 				pChar->Reset();
 			}
-			pPlayer->m_ScoreKZ = 0;
+			if(!m_IsRoundEnd)
+				pPlayer->m_ScoreKZ = 0;
 			pPlayer->Respawn();
 		}
 		OnNewMatch();
+		m_IsRoundEnd = false;
 		return;
 	}
 
@@ -160,6 +189,9 @@ void CGameControllerBaseKZ::Tick()
 
 	if(!m_Warmup)
 	{
+		m_StartingMatch = false;
+		m_StartingRound = false;
+
 		if(g_Config.m_SvTimeLimit && (((g_Config.m_SvTimeLimit * Server()->TickSpeed() * 60) + m_RoundStartTick) <= Server()->Tick()))
 			m_SuddenDeath = 1;
 

@@ -46,7 +46,7 @@ CGameControllerDM::CGameControllerDM(class CGameContext *pGameServer) :
 	{
 		m_pGameType = g_Config.m_SvTestingCommands ? TEST_TYPE_NAME : GAME_TYPE_NAME;
 	}
-	
+
 	m_GameFlags = 0;
 }
 
@@ -73,7 +73,7 @@ int CGameControllerDM::DoWinCheck()
 
 	if(m_SuddenDeath ? !Draw : HighScore >= g_Config.m_SvScoreLimit)
 	{
-		m_WinPauseTicks = 5 * Server()->TickSpeed();
+		m_WinPauseTicks = 10 * Server()->TickSpeed();
 		return 1;
 	}
 

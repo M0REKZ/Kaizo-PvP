@@ -2790,6 +2790,10 @@ if(SERVER)
     gamemodes/kz/dm.h
     gamemodes/kz/ctf.cpp
     gamemodes/kz/ctf.h
+    gamemodes/kz/lms.cpp
+    gamemodes/kz/lms.h
+    gamemodes/kz/lts.cpp
+    gamemodes/kz/lts.h
     gamemodes/kz/tdm.cpp
     gamemodes/kz/tdm.h
     gamemodes/mod.cpp

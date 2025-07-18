@@ -159,6 +159,13 @@ public:
 	virtual bool IsFriendlyFire(int ClientID1, int ClientID2) { return false; };
 	virtual bool IsTeamPlay() { return m_GameFlags &= GAMEFLAG_TEAMS; }
 	virtual void OnNewMatch() {};
+	bool HasEnoughPlayers() const;
+	bool m_WaitingForPlayers = false;
+	bool m_StartingMatch = false;
+	bool m_StartingRound = false;
+	int m_PausedTicks = 0;
+	int m_WinPauseTicks = 0;
+	bool m_IsRoundEnd = false;
 };
 
 #endif
