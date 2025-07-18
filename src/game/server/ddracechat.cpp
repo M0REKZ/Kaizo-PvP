@@ -364,6 +364,12 @@ void CGameContext::ConToggleSpec(IConsole::IResult *pResult, void *pUserData)
 	CPlayer *pPlayer = pSelf->m_apPlayers[pResult->m_ClientId];
 	if(!pPlayer)
 		return;
+	
+	if(!g_Config.m_SvSpecPause)
+	{
+		pSelf->SendChatTarget(pResult->m_ClientId, "/spec and /pause are disabled on this server.");
+		return;
+	}
 
 	int PauseType = g_Config.m_SvPauseable ? CPlayer::PAUSE_SPEC : CPlayer::PAUSE_PAUSED;
 
@@ -384,6 +390,17 @@ void CGameContext::ConToggleSpecVoted(IConsole::IResult *pResult, void *pUserDat
 
 void CGameContext::ConTogglePause(IConsole::IResult *pResult, void *pUserData)
 {
+	if(!CheckClientId(pResult->m_ClientId))
+		return;
+
+	CGameContext *pSelf = (CGameContext *)pUserData;
+	
+	if(!g_Config.m_SvSpecPause)
+	{
+		pSelf->SendChatTarget(pResult->m_ClientId, "/spec and /pause are disabled on this server.");
+		return;
+	}
+
 	ToggleSpecPause(pResult, pUserData, CPlayer::PAUSE_PAUSED);
 }
 

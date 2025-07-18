@@ -637,7 +637,7 @@ void IGameController::Snap(int SnappingClient)
 		GAMEINFOFLAG_RACE_RECORD_MESSAGE |
 		GAMEINFOFLAG_ALLOW_EYE_WHEEL |
 		GAMEINFOFLAG_ALLOW_HOOK_COLL |
-		GAMEINFOFLAG_ALLOW_ZOOM |
+		//GAMEINFOFLAG_ALLOW_ZOOM |
 		GAMEINFOFLAG_BUG_DDRACE_GHOST |
 		GAMEINFOFLAG_BUG_DDRACE_INPUT |
 		//GAMEINFOFLAG_PREDICT_DDRACE | //+KZ
@@ -651,8 +651,12 @@ void IGameController::Snap(int SnappingClient)
 		pGameInfoEx->m_Flags2 |= GAMEINFOFLAG2_NO_WEAK_HOOK;
 	pGameInfoEx->m_Version = GAMEINFO_CURVERSION;
 
-	pGameInfoEx->m_Flags |= GAMEINFOFLAG_PREDICT_VANILLA; //TODO put in gamecontroller +KZ
-	pGameInfoEx->m_Flags2 |= GAMEINFOFLAG2_HUD_HEALTH_ARMOR | GAMEINFOFLAG2_HUD_AMMO; //TODO put in gamecontroller +KZ
+	//TODO put in gamecontroller +KZ:
+
+	pGameInfoEx->m_Flags |= GAMEINFOFLAG_PREDICT_VANILLA | GAMEINFOFLAG_GAMETYPE_VANILLA; 
+	pGameInfoEx->m_Flags2 |= GAMEINFOFLAG2_HUD_HEALTH_ARMOR | GAMEINFOFLAG2_HUD_AMMO;
+	if(g_Config.m_SvAllowZoom)
+		pGameInfoEx->m_Flags |= GAMEINFOFLAG_ALLOW_ZOOM;
 
 	if(Server()->IsSixup(SnappingClient))
 	{
