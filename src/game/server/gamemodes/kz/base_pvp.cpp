@@ -322,8 +322,10 @@ bool CGameControllerBasePvP::OnEntity(int Index, int x, int y, int Layer, int Fl
 	{
 		if(m_InstagibWeapon != -1)
 		        return false;
-		else
-			return CGameControllerBaseKZ::OnEntity(Index, x, y, Layer, Flags, Initial, Number);
+	}
+	else
+	{
+		return CGameControllerBaseKZ::OnEntity(Index, x, y, Layer, Flags, Initial, Number);
 	}
 
 	const vec2 Pos(x * 32.0f + 16.0f, y * 32.0f + 16.0f);
