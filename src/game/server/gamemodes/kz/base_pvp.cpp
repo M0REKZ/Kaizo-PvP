@@ -317,7 +317,7 @@ int CGameControllerBasePvP::OnCharacterDeath(CCharacter *pVictim, CPlayer *pKill
 
 bool CGameControllerBasePvP::OnEntity(int Index, int x, int y, int Layer, int Flags, bool Initial, int Number)
 {
-	if(Index != ENTITY_ARMOR_1 && Index != ENTITY_HEALTH_1 && Index != ENTITY_WEAPON_GRENADE && Index != ENTITY_WEAPON_LASER && Index != ENTITY_WEAPON_SHOTGUN && Index != ENTITY_POWERUP_NINJA)
+	if(m_InstagibWeapon == -1 ? (Index != ENTITY_ARMOR_1 && Index != ENTITY_HEALTH_1 && Index != ENTITY_WEAPON_GRENADE && Index != ENTITY_WEAPON_LASER && Index != ENTITY_WEAPON_SHOTGUN && Index != ENTITY_POWERUP_NINJA) : true)
 		return CGameControllerBaseKZ::OnEntity(Index, x, y, Layer, Flags, Initial, Number);
 
 	const vec2 Pos(x * 32.0f + 16.0f, y * 32.0f + 16.0f);
@@ -375,5 +375,6 @@ void CGameControllerBasePvP::OnCharacterSpawn(CCharacter *pChr)
 	pChr->GiveWeapon(WEAPON_GUN,true);
 
 	pChr->GiveWeapon(m_InstagibWeapon);
+	pChr->SetActiveWeapon(m_InstagibWeapon);
 
 }
