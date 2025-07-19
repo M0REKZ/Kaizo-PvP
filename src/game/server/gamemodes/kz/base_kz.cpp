@@ -84,7 +84,7 @@ void CGameControllerBaseKZ::OnPlayerConnect(CPlayer *pPlayer)
 	}
 
 	//balance team
-	if(IsTeamPlay())
+	if(IsTeamPlay() && pPlayer->GetTeam() != TEAM_SPECTATORS)
 	{
 		int Red = 0,Blue = 0;
 
