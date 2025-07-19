@@ -45,10 +45,6 @@ CLaserKZ::CLaserKZ(CGameWorld *pGameWorld, vec2 Pos, vec2 Direction, float Start
 		break;
 	}
 
-	if(m_Energy < 0)
-		m_Energy = m_MaxEnergy;
-	 
-
 	GameWorld()->InsertEntity(this);
 }
 
@@ -265,7 +261,7 @@ void CLaserKZ::Tick()
 	if((Server()->Tick() - m_EvalTick) > (Server()->TickSpeed() * Delay / 1000.0f))
 	{
 		m_SnapTick = Server()->Tick();
-		if(m_CreateNewLaser && m_Energy != -1)
+		if(m_CreateNewLaser && m_Energy >= 0)
 		{
 			CreateNewLaser();
 			m_CreateNewLaser = false;
