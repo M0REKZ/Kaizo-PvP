@@ -63,7 +63,8 @@ void CGameControllerLMS::OnNewMatch()
 		if(!pPlayer)
 			continue;
 
-		pPlayer->m_IsDead = false; //+KZ
+		pPlayer->m_IsDead = false;
+		pPlayer->m_Lives = g_Config.m_SvSurvivalLives; // +KZ LMS/LTS Lives
 	}
 }
 
@@ -120,7 +121,15 @@ int CGameControllerLMS::OnCharacterDeath(CCharacter *pVictim, CPlayer *pKiller, 
 {
 	if(pVictim && pVictim->GetPlayer())
 	{
-		pVictim->GetPlayer()->m_IsDead = true;
+		if(!pVictim->GetPlayer()->m_Lives)
+			pVictim->GetPlayer()->m_IsDead = true;
+		else
+		{
+			pVictim->GetPlayer()->m_Lives--;
+			char aBuf[64];
+			str_format(aBuf, sizeof(aBuf), "Lives left: %d", pVictim->GetPlayer()->m_Lives);
+			GameServer()->SendBroadcast(aBuf, pVictim->GetPlayer()->GetCid());
+		}
 	}
 	return CGameControllerDM::OnCharacterDeath(pVictim,pKiller,Weapon);
 }

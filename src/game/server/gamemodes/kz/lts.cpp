@@ -103,6 +103,7 @@ void CGameControllerLTS::OnNewMatch()
 			continue;
 
 		pPlayer->m_IsDead = false; //+KZ
+		pPlayer->m_Lives = g_Config.m_SvSurvivalLives; // +KZ LMS/LTS Lives
 	}
 
 	if(!m_IsRoundEnd)

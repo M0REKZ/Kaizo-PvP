@@ -241,6 +241,7 @@ public:
 	
 	int m_ScoreKZ = 0;
 	bool m_IsDead = false;
+	int m_Lives = 0; // +KZ LMS/LTS Lives
 	void HandleKZBot(CNetObj_PlayerInput &Input);
 };
 
