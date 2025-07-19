@@ -3,19 +3,45 @@
 #ifndef GAME_SERVER_ENTITIES_LASER_PVP_H
 #define GAME_SERVER_ENTITIES_LASER_PVP_H
 
-#include "laser_kz.h"
+#include <game/server/entity.h>
 
-class CLaserPvP : public CLaserKZ
+class CLaserPvP : public CEntity
 {
 public:
-	CLaserPvP(CGameWorld *pGameWorld, vec2 Pos, vec2 Direction, float StartEnergy, int Owner, int Type, int Bounces = 0);
+	CLaserPvP(CGameWorld *pGameWorld, vec2 Pos, vec2 Direction, float StartEnergy, int Owner, int Type);
 
+	void Reset() override;
+	void Tick() override;
+	void TickPaused() override;
+	void Snap(int SnappingClient) override;
+	void SwapClients(int Client1, int Client2) override;
+
+	int GetOwnerId() const override { return m_Owner; }
 
 protected:
+	bool HitCharacter(vec2 From, vec2 To);
+	void DoBounce();
 
-	virtual void OnCharacterCollide(CCharacter *pChar, vec2 CollidePos) override;
-	virtual void CreateNewLaser() override;
+private:
+	vec2 m_From;
+	vec2 m_Dir;
+	vec2 m_TelePos;
+	bool m_WasTele;
+	float m_Energy;
+	int m_Bounces;
+	int m_EvalTick;
+	int m_Owner;
+	CClientMask m_TeamMask;
+	bool m_ZeroEnergyBounceInLastTick;
 
+	// DDRace
+
+	vec2 m_PrevPos;
+	int m_Type;
+	int m_TuneZone;
+	bool m_TeleportCancelled;
+	bool m_IsBlueTeleport;
+	bool m_BelongsToPracticeTeam;
 };
 
 #endif
