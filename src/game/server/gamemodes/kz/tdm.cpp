@@ -108,7 +108,7 @@ int CGameControllerTDM::OnCharacterDeath(CCharacter *pVictim, CPlayer *pKiller, 
 
 bool CGameControllerTDM::CanJoinTeam(int Team, int NotThisId, char *pErrorReason, int ErrorReasonSize)
 {
-	if(Team == TEAM_RED || Team == TEAM_BLUE)
+	if(Team == TEAM_RED || Team == TEAM_BLUE || Team == TEAM_SPECTATORS)
 		return true;
 
 	return CGameControllerBasePvP::CanJoinTeam(Team,NotThisId,pErrorReason,ErrorReasonSize);

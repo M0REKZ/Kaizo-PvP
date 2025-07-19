@@ -433,7 +433,7 @@ void CPlayer::Snap(int SnappingClient)
 		pPlayerInfo->m_Latency = Latency;
 	}
 
-	if(m_ClientId == SnappingClient && (m_Team == TEAM_SPECTATORS || m_Paused))
+	if(m_ClientId == SnappingClient && (m_Team == TEAM_SPECTATORS || m_Paused || m_IsDead))
 	{
 		if(!Server()->IsSixup(SnappingClient))
 		{

@@ -146,6 +146,20 @@ void CGameControllerBaseKZ::Tick()
 		m_GameOverTick = -1;
 		m_RoundStartTick = Server()->Tick();
 		m_SuddenDeath = 0;
+		for(auto pPlayer : GameServer()->m_apPlayers)
+		{
+			if(!pPlayer)
+				continue;
+
+			pPlayer->m_IsDead = false;
+
+			if(CCharacter *pChar = pPlayer->GetCharacter())
+			{
+				pChar->Reset();
+			}
+			pPlayer->m_ScoreKZ = 0;
+			pPlayer->Respawn();
+		}
 		OnNewMatch();
 	}
 

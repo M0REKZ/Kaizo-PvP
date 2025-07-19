@@ -115,7 +115,7 @@ void CGameControllerLTS::OnNewMatch()
 
 bool CGameControllerLTS::CanJoinTeam(int Team, int NotThisId, char *pErrorReason, int ErrorReasonSize)
 {
-	if(Team == TEAM_RED || Team == TEAM_BLUE)
+	if(Team == TEAM_RED || Team == TEAM_BLUE || Team == TEAM_SPECTATORS)
 		return true;
 
 	return CGameControllerLMS::CanJoinTeam(Team,NotThisId,pErrorReason,ErrorReasonSize);
