@@ -233,6 +233,7 @@ void CLaserKZ::CreateNewLaser()
 
 	if(p && !p->m_MarkedForDestroy)
 	{
+		p->m_ZeroEnergyBounceInLastTick = m_ZeroEnergyBounceInLastTick;
 		p->Tick();
 	}
 	m_ResetNextTick = true;

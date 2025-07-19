@@ -405,7 +405,7 @@ void CPlayer::Snap(int SnappingClient)
 		pPlayerInfo->m_Score = m_ScoreKZ; //+KZ modified
 		pPlayerInfo->m_Local = (int)(m_ClientId == SnappingClient && (m_Paused != PAUSE_PAUSED || SnappingClientVersion >= VERSION_DDNET_OLD));
 		pPlayerInfo->m_ClientId = id;
-		pPlayerInfo->m_Team = m_Team;
+		pPlayerInfo->m_Team = (m_IsDead && SnappingClientVersion < VERSION_DDNET_PLAYERFLAG_SPEC_CAM) ? TEAM_SPECTATORS : m_Team;
 		if(SnappingClientVersion < VERSION_DDNET_INDEPENDENT_SPECTATORS_TEAM)
 		{
 			// In older versions the SPECTATORS TEAM was also used if the own player is in PAUSE_PAUSED or if any player is in PAUSE_SPEC.
@@ -519,7 +519,7 @@ void CPlayer::Snap(int SnappingClient)
 		pDDNetPlayer->m_Flags |= EXPLAYERFLAG_AFK;
 	if(m_Paused == PAUSE_SPEC)
 		pDDNetPlayer->m_Flags |= EXPLAYERFLAG_SPEC;
-	if(m_Paused == PAUSE_PAUSED)
+	if(m_Paused == PAUSE_PAUSED || m_IsDead)
 		pDDNetPlayer->m_Flags |= EXPLAYERFLAG_PAUSED;
 
 	if(Server()->IsSixup(SnappingClient) && m_pCharacter && m_pCharacter->m_DDRaceState == ERaceState::STARTED &&

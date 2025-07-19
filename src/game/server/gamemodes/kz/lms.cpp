@@ -138,7 +138,7 @@ void CGameControllerLMS::OnCharacterSpawn(CCharacter *pChr)
 {
 	CGameControllerDM::OnCharacterSpawn(pChr);
 
-	if(pChr)
+	if(pChr && m_InstagibWeapon == -1)
 	{
 		// give start equipment
 		pChr->IncreaseArmor(5);
